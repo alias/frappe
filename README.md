@@ -1,3 +1,8 @@
+#### Infos zu unseren hacks
+
+Diff (vom aktuellen Checkout) : `git diff --stat --color ..upstream/develop`
+
+
 <div align="center">
 	<h1>
 		<br>

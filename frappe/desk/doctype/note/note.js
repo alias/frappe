@@ -19,10 +19,11 @@ frappe.ui.form.on("Note", {
 
 		// content read_only
 		frm.set_df_property("content", "read_only", frm.is_note_editable ? 0 : 1);
-
+		frm.set_df_property("developer_content", "read_only", frm.is_note_editable ? 0: 1);
+		frm.set_df_property("marketing_content", "read_only", frm.is_note_editable ? 0: 1);
 		// hide all other fields
 		for (const field of frm.meta.fields) {
-			if (field.fieldname !== "content") {
+			if (!["content", "section_break_4", "developer_content", "marketing_content", "developer_note", "marketing_note"].includes(field.fieldname)) {
 				frm.set_df_property(
 					field.fieldname,
 					"hidden",
@@ -35,7 +36,13 @@ frappe.ui.form.on("Note", {
 
 		// no label, description for content either
 		frm.get_field("content").toggle_label(frm.is_note_editable);
+		frm.get_field("developer_content").toggle_label(frm.is_note_editable);
+		frm.get_field("marketing_content").toggle_label(frm.is_note_editable);
+
 		frm.get_field("content").toggle_description(frm.is_note_editable);
+		frm.get_field("developer_content").toggle_description(frm.is_note_editable);
+		frm.get_field("marketing_content").toggle_description(frm.is_note_editable);
+
 	},
 });
 

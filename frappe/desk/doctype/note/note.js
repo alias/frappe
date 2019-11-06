@@ -21,18 +21,26 @@ frappe.ui.form.on("Note", {
 		if (editable && !frm.perm[0].write) return;
 
 		// content read_only
-		frm.set_df_property("content", "read_only", editable ? 0 : 1);
+		frm.set_df_property("content", "read_only", editable ? 0: 1);
+		frm.set_df_property("developer_content", "read_only", editable ? 0: 1);
+		frm.set_df_property("marketing_content", "read_only", editable ? 0: 1);
 
 		// hide all other fields
-		$.each(frm.fields_dict, function (fieldname) {
-			if (fieldname !== "content") {
-				frm.set_df_property(fieldname, "hidden", editable ? 0 : 1);
+		$.each(frm.fields_dict, function(fieldname) {
+
+			  if(!(["content", "section_break_4", "developer_content", "marketing_content", "developer_note", "marketing_note"].includes(fieldname)) ) {
+				frm.set_df_property(fieldname, "hidden", editable ? 0: 1);
 			}
 		});
 
 		// no label, description for content either
 		frm.get_field("content").toggle_label(editable);
+		frm.get_field("developer_content").toggle_label(editable);
+		frm.get_field("marketing_content").toggle_label(editable);
+
 		frm.get_field("content").toggle_description(editable);
+		frm.get_field("developer_content").toggle_description(editable);
+		frm.get_field("marketing_content").toggle_description(editable);
 
 		// set flag for toggle
 		frm.is_note_editable = editable;

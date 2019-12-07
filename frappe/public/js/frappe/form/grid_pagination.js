@@ -6,7 +6,7 @@ export default class GridPagination {
 	}
 
 	setup_pagination() {
-		this.page_length = 20;
+		this.page_length = 200;
 		this.page_index = 1;
 		this.total_pages = Math.ceil(this.grid.data.length/this.page_length);
 
@@ -14,6 +14,7 @@ export default class GridPagination {
 	}
 
 	render_pagination() {
+		
 		if (this.grid.data.length <= this.page_length) {
 			this.wrapper.find('.grid-pagination').html('');
 		} else {

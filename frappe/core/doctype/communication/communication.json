@@ -1,4 +1,5 @@
 {
+ "actions": [],
  "allow_import": 1,
  "creation": "2013-01-29 10:47:14",
  "description": "Keeps track of all communications",
@@ -92,8 +93,7 @@
   {
    "fieldname": "recipients",
    "fieldtype": "Code",
-   "label": "To",
-   "options": "Email"
+   "label": "To"
   },
   {
    "depends_on": "eval:doc.communication_medium===\"Email\"",
@@ -383,8 +383,9 @@
  ],
  "icon": "fa fa-comment",
  "idx": 1,
- "modified": "2019-10-09 14:22:27.664645",
- "modified_by": "Administrator",
+ "links": [],
+ "modified": "2019-12-22 21:39:13.826021",
+ "modified_by": "sb@oekobox-online.de",
  "module": "Core",
  "name": "Communication",
  "owner": "Administrator",

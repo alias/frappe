@@ -120,6 +120,7 @@ def clean_email_html(html):
 			"h6",
 			"button",
 			"img",
+			"blockquote",
 		},
 		attributes={"*": {"border", "colspan", "rowspan", "src", "href", "style", "id"}},
 		clean_content_tags=REMOVE_CONTENT_TAGS,

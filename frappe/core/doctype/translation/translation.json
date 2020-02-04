@@ -1,4 +1,5 @@
 {
+ "actions": [],
  "allow_import": 1,
  "autoname": "hash",
  "creation": "2016-02-17 12:21:16.175465",
@@ -42,6 +43,7 @@
    "fieldname": "target_name",
    "fieldtype": "Code",
    "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "Translated Text"
   },
   {
@@ -65,7 +67,8 @@
    "read_only": 1
   }
  ],
- "modified": "2019-06-18 19:03:38.640990",
+ "links": [],
+ "modified": "2020-02-03 13:56:37.784157",
  "modified_by": "Administrator",
  "module": "Core",
  "name": "Translation",

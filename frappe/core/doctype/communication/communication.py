@@ -337,6 +337,7 @@ def get_permission_query_conditions_for_communication(user):
 			.format(email_accounts=','.join(email_accounts))
 
 def get_contacts(email_strings):
+	import re
 	email_addrs = []
 
 	for email_string in email_strings:
@@ -352,13 +353,19 @@ def get_contacts(email_strings):
 		contact_name = get_contact_name(email)
 
 		if not contact_name:
+			first_name = frappe.unscrub(email.split("@")[0])
 			contact = frappe.get_doc({
 				"doctype": "Contact",
-				"first_name": frappe.unscrub(email.split("@")[0]),
+				"first_name": first_name,
 			})
+			second_level_domain = frappe._("pcg_domain_unknown")
+			if len(re.search(r'@(.*)\.', email).groups()) > 0:
+				second_level_domain = re.search(r'@(.*)\.', email).group(1)
+			print("EMAIL IS {} second dom: {} {} {}".format(email, second_level_domain, type(first_name), first_name))
 			contact.add_email(email_id=email, is_primary=True)
 			contact.insert(ignore_permissions=True)
-			contact_name = contact.name
+			contact_name = first_name + " @ " + second_level_domain
+			frappe.rename_doc("Contact", contact.name, contact_name)
 
 		contacts.append(contact_name)
 

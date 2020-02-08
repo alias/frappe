@@ -186,7 +186,7 @@ frappe.views.QueryReport = class QueryReport extends frappe.views.BaseList {
 		let report_script_name = this.report_doc.report_type === 'Custom Report'
 			? this.report_doc.reference_report
 			: this.report_name;
-		return frappe.query_reports[report_script_name];
+		return frappe.query_reports[report_script_name] || {};
 	}
 
 	setup_progress_bar() {
@@ -218,14 +218,15 @@ frappe.views.QueryReport = class QueryReport extends frappe.views.BaseList {
 			if (df.on_change) f.on_change = df.on_change;
 
 			df.onchange = () => {
+				let current_filters = this.get_filter_value();
 				if (this.previous_filters
-					&& (JSON.stringify(this.previous_filters) == JSON.stringify(this.get_filter_values()))) {
+					&& (JSON.stringify(this.previous_filters) === JSON.stringify(current_filters))) {
 					// filter values have not changed
 					return;
 				}
-				this.previous_filters = this.get_filter_values();
 
-				// clear previous_filters after 3 seconds, to allow refresh for new data
+				// clear previous_filters after 10 seconds, to allow refresh for new data
+				this.previous_filters = current_filters;
 				setTimeout(() => this.previous_filters = null, 10000);
 
 				if (f.on_change) {
@@ -452,18 +453,20 @@ frappe.views.QueryReport = class QueryReport extends frappe.views.BaseList {
 
 	render_datatable() {
 		let data = this.data;
+		let columns = this.columns.filter((col) => !col.hidden);
 
 		if (this.raw_data.add_total_row) {
 			data = data.slice();
 			data.splice(-1, 1);
 		}
 
-		if (this.datatable) {
+		if (this.datatable && this.datatable.options
+			&& (this.datatable.options.showTotalRow ===this.raw_data.add_total_row)) {
 			this.datatable.options.treeView = this.tree_report;
-			this.datatable.refresh(data, this.columns);
+			this.datatable.refresh(data, columns);
 		} else {
 			let datatable_options = {
-				columns: this.columns.filter((col) => !col.hidden),
+				columns: columns,
 				data: data,
 				inlineFilters: true,
 				treeView: this.tree_report,
@@ -507,6 +510,9 @@ frappe.views.QueryReport = class QueryReport extends frappe.views.BaseList {
 				})
 			};
 		}
+		options.axisOptions = {
+			shortenYAxisNumbers: 1
+		};
 
 		return options;
 	}
@@ -561,7 +567,7 @@ frappe.views.QueryReport = class QueryReport extends frappe.views.BaseList {
 	get_possible_chart_options() {
 		const columns = this.columns;
 		const rows =  this.raw_data.result.filter(value => Object.keys(value).length);
-		const first_row = Array.isArray(rows[0]) ? rows[0] : Object.values(rows[0]);
+		const first_row = Array.isArray(rows[0]) ? rows[0] : columns.map(col => rows[0][col.fieldname]);
 		const me = this
 
 		const indices = first_row.reduce((accumulator, current_value, current_index) => {
@@ -962,8 +968,10 @@ frappe.views.QueryReport = class QueryReport extends frappe.views.BaseList {
 	}
 
 	get_data_for_csv(include_indentation) {
-		const indices = this.datatable.bodyRenderer.visibleRowIndices;
-		const rows = indices.map(i => this.datatable.datamanager.getRow(i));
+		const rows = this.datatable.bodyRenderer.visibleRows;
+		if (this.raw_data.add_total_row) {
+			rows.push(this.datatable.bodyRenderer.getTotalRow());
+		}
 		return rows.map(row => {
 			const standard_column_count = this.datatable.datamanager.getStandardColumnCount();
 			return row
@@ -1119,7 +1127,7 @@ frappe.views.QueryReport = class QueryReport extends frappe.views.BaseList {
 								label: df.label,
 								link_field: this.doctype_field_map[values.doctype],
 								doctype: values.doctype,
-								options: df.fieldtype === "Link" ? frappe.model.unscrub(df.fieldname) : undefined,
+								options: df.fieldtype === "Link" ? df.options : undefined,
 								width: 100
 							});
 

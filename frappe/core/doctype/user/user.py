@@ -98,6 +98,8 @@ class User(Document):
 		clear_notifications(user=self.name)
 		frappe.clear_cache(user=self.name)
 		self.send_password_notification(self.__new_password)
+		if self.__new_password:
+			self.reset_password_key = ''
 		create_contact(self, ignore_mandatory=True)
 		if self.name not in ('Administrator', 'Guest') and not self.user_image:
 			frappe.enqueue('frappe.core.doctype.user.user.update_gravatar', name=self.name)
@@ -260,7 +262,7 @@ class User(Document):
 		if not subject:
 			site_name = frappe.db.get_default('site_name') or frappe.get_conf().get("site_name")
 			if site_name:
-				subject = _("Welcome to {0}".format(site_name))
+				subject = _("Welcome to {0}").format(site_name)
 			else:
 				subject = _("Complete Registration")
 
@@ -366,10 +368,10 @@ class User(Document):
 					(tab, field, '%s', field, '%s'), (new_name, old_name))
 
 		if frappe.db.exists("Chat Profile", old_name):
-			frappe.rename_doc("Chat Profile", old_name, new_name, force=True)
+			frappe.rename_doc("Chat Profile", old_name, new_name, force=True, show_alert=False)
 
 		if frappe.db.exists("Notification Settings", old_name):
-			frappe.rename_doc("Notification Settings", old_name, new_name, force=True)
+			frappe.rename_doc("Notification Settings", old_name, new_name, force=True, show_alert=False)
 
 		# set email
 		frappe.db.sql("""UPDATE `tabUser`
@@ -562,8 +564,8 @@ def update_password(new_password, logout_all_sessions=0, key=None, old_password=
 
 	frappe.local.login_manager.login_as(user)
 
-	frappe.db.set_value("User", user,
-		'last_password_reset_date', today())
+	frappe.db.set_value("User", user, "last_password_reset_date", today())
+	frappe.db.set_value("User", user, "reset_password_key", "")
 
 	if user_doc.user_type == "System User":
 		return "/desk"

@@ -1,5 +1,5 @@
 <div class="media timeline-item {% if (data.user_content) { %} user-content {% } else { %} notification-content {% } %} {{ data.color || "" }}"
-	data-doctype="{{ data.doctype }}" data-name="{{ data.name }}" data-communication-type = "{{ data.communication_type }}">
+	   data-doctype="{{ data.doctype }}" data-name="{{ data.name }}" data-communication-type = "{{ data.communication_type }}" {% if (data.additional_attributes) { %} {{ data.additional_attributes }} {% } %} >
 	{% if (data.user_content) { %}
 	<span class="pull-left avatar avatar-medium hidden-xs" style="margin-top: 1px">
 		{% if(data.user_info.image) { %}

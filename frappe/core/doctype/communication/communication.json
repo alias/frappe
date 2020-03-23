@@ -128,6 +128,7 @@
   {
    "fieldname": "content",
    "fieldtype": "Text Editor",
+   "in_global_search": 1,
    "label": "Message",
    "width": "400"
   },
@@ -382,8 +383,8 @@
  "icon": "fa fa-comment",
  "idx": 1,
  "links": [],
- "modified": "2020-01-22 11:37:46.368211",
- "modified_by": "sb@oekobox-online.de",
+ "modified": "2020-02-26 16:11:03.369984",
+ "modified_by": "Administrator",
  "module": "Core",
  "name": "Communication",
  "owner": "Administrator",

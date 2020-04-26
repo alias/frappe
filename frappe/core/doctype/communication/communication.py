@@ -354,20 +354,26 @@ def get_contacts(email_strings):
 
 		if not contact_name:
 			first_name = frappe.unscrub(email.split("@")[0])
-			contact = frappe.get_doc({
-				"doctype": "Contact",
-				"first_name": first_name,
-			})
-			second_level_domain = frappe._("pcg_domain_unknown")
-			if len(re.search(r'@(.*)\.', email).groups()) > 0:
-				second_level_domain = re.search(r'@(.*)\.', email).group(1)
-			print("EMAIL IS {} second dom: {} {} {}".format(email, second_level_domain, type(first_name), first_name))
-			contact.add_email(email_id=email, is_primary=True)
-			contact.insert(ignore_permissions=True)
-			contact_name = first_name + " @ " + second_level_domain
-			frappe.rename_doc("Contact", contact.name, contact_name)
 
-		contacts.append(contact_name)
+			try:
+				contact = frappe.get_doc({
+					"doctype": "Contact",
+					"first_name": first_name,
+				})
+				second_level_domain = frappe._("pcg_domain_unknown")
+				if len(re.search(r'@(.*)\.', email).groups()) > 0:
+					second_level_domain = re.search(r'@(.*)\.', email).group(1)
+				print("EMAIL IS {} second dom: {} {} {}".format(email, second_level_domain, type(first_name), first_name))
+				contact.add_email(email_id=email, is_primary=True)
+				contact.insert(ignore_permissions=True)
+				contact_name = first_name + " @ " + second_level_domain
+				frappe.rename_doc("Contact", contact.name, contact_name)
+				contacts.append(contact_name)
+			except Exception:
+				traceback = frappe.get_traceback()
+				frappe.log_error(traceback)
+
+
 
 	return contacts
 

@@ -415,6 +415,7 @@ frappe.ui.form.Form = class FrappeForm {
 	}
 
 	render_form(switched) {
+    let returnPromise = Promise.resolve();
 		if(!this.meta.istable) {
 			this.layout.doc = this.doc;
 			this.layout.attach_doc_and_docfields();
@@ -428,7 +429,7 @@ frappe.ui.form.Form = class FrappeForm {
 			// clear layout message
 			this.layout.show_message();
 
-			frappe.run_serially([
+			returnPromise = frappe.run_serially([
 				// header must be refreshed before client methods
 				// because add_custom_button
 				() => this.refresh_header(switched),
@@ -466,6 +467,7 @@ frappe.ui.form.Form = class FrappeForm {
 		}
 
 		this.scroll_to_element();
+    return returnPromise;
 	}
 
 	refresh_fields() {
@@ -918,7 +920,7 @@ frappe.ui.form.Form = class FrappeForm {
 
 		if(!this.doc.__islocal) {
 			frappe.model.remove_from_locals(this.doctype, this.docname);
-			frappe.model.with_doc(this.doctype, this.docname, () => {
+			return frappe.model.with_doc(this.doctype, this.docname, () => {
 				this.refresh();
 			});
 		}

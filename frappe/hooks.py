@@ -77,7 +77,8 @@ leaderboards = "frappe.desk.leaderboard.get_leaderboards"
 
 on_session_creation = [
 	"frappe.core.doctype.activity_log.feed.login_feed",
-	"frappe.core.doctype.user.user.notify_admin_access_to_system_manager"
+	"frappe.core.doctype.user.user.notify_admin_access_to_system_manager",
+	"frappe.utils.scheduler.reset_enabled_scheduler_events",
 ]
 
 on_logout = "frappe.core.doctype.session_default_settings.session_default_settings.clear_session_defaults"
@@ -149,23 +150,28 @@ doc_events = {
 	"Contact": {
 		"after_insert": "frappe.integrations.doctype.google_contacts.google_contacts.insert_contacts_to_google_contacts",
 		"on_update": "frappe.integrations.doctype.google_contacts.google_contacts.update_contacts_to_google_contacts",
+	},
+	"DocType": {
+		"after_insert": "frappe.cache_manager.build_domain_restriced_doctype_cache",
+		"after_save": "frappe.cache_manager.build_domain_restriced_doctype_cache",
+	},
+	"Page": {
+		"after_insert": "frappe.cache_manager.build_domain_restriced_page_cache",
+		"after_save": "frappe.cache_manager.build_domain_restriced_page_cache",
 	}
 }
 
 scheduler_events = {
-	"cron": {
-		"0/15 * * * *": [
-			"frappe.oauth.delete_oauth2_data",
-			"frappe.website.doctype.web_page.web_page.check_publish_status",
-			"frappe.twofactor.delete_all_barcodes_for_users"
-		]
-	},
 	"all": [
 		"frappe.email.queue.flush",
 		"frappe.email.doctype.email_account.email_account.pull",
 		"frappe.email.doctype.email_account.email_account.notify_unreplied",
+		"frappe.oauth.delete_oauth2_data",
 		"frappe.integrations.doctype.razorpay_settings.razorpay_settings.capture_payment",
-		'frappe.utils.global_search.sync_global_search'
+		"frappe.twofactor.delete_all_barcodes_for_users",
+		"frappe.website.doctype.web_page.web_page.check_publish_status",
+		'frappe.utils.global_search.sync_global_search',
+		"frappe.monitor.flush",
 	],
 	"hourly": [
 		"frappe.model.utils.link_count.update_link_count",
@@ -247,7 +253,10 @@ bot_parsers = [
 	'frappe.utils.bot.CountBot'
 ]
 
-setup_wizard_exception = "frappe.desk.page.setup_wizard.setup_wizard.email_setup_wizard_exception"
+setup_wizard_exception = [
+	"frappe.desk.page.setup_wizard.setup_wizard.email_setup_wizard_exception",
+	"frappe.desk.page.setup_wizard.setup_wizard.log_setup_wizard_exception"
+]
 
 before_migrate = ['frappe.patches.v11_0.sync_user_permission_doctype_before_migrate.execute']
 after_migrate = ['frappe.website.doctype.website_theme.website_theme.generate_theme_files_if_not_exist']
@@ -328,4 +337,3 @@ global_search_doctypes = {
 		{"doctype": "Web Form"}
 	]
 }
-

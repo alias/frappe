@@ -127,7 +127,6 @@ def get_aggregate_function(chart_type):
 		"Average": "AVG",
 	}[chart_type]
 
-<<<<<<< HEAD
 def get_result(data, timegrain, from_date, to_date):
 	start_date = getdate(from_date)
 	end_date = getdate(to_date)
@@ -144,7 +143,6 @@ def get_result(data, timegrain, from_date, to_date):
 			while data_index < len(data) and getdate(data[data_index][0]) <= d[0]:
 				d[1] += data[data_index][1]
 				data_index += 1
-=======
 
 def convert_to_dates(data, timegrain):
 	""" Converts individual dates within data to the end of period """
@@ -213,7 +211,6 @@ def add_missing_values(data, timegrain, timespan, from_date, to_date):
 	# add date for the last period (if missing)
 	if result and get_period_ending(to_date, timegrain) > result[-1][0]:
 		result.append([get_period_ending(to_date, timegrain), 0.0])
->>>>>>> develop
 
 	return result
 
@@ -248,9 +245,6 @@ def get_week_ending(date):
 	start = date - timedelta(days = date.weekday())
 	end = start + timedelta(days=6)
 
-<<<<<<< HEAD
-	return end
-=======
 	week_of_the_year = int(date.strftime('%U'))
 
 	if week_of_the_year == 52:
@@ -259,7 +253,6 @@ def get_week_ending(date):
 	date = add_to_date('{}-01-01'.format(date.year), weeks = (week_of_the_year%52) + 1)
 	# last day of this week
 	return add_to_date(date, days=-1)
->>>>>>> develop
 
 def get_month_ending(date):
 	month_of_the_year = int(date.strftime('%m'))

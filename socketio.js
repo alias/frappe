@@ -60,6 +60,20 @@ io.on('connection', function (socket) {
 		}
 	});
 
+	socket.on("frappe.chat.room:unsubscribe", function (rooms) {
+	    if (!Array.isArray(rooms)) {
+		      rooms = [rooms];
+	    }
+
+	    for (var room of rooms) {
+		      console.log('frappe.chat: Unsubscribing ' + socket.user + ' from room ' + room);
+		      room = get_chat_room(socket, room);
+
+		      console.log('frappe.chat: Unsubscribing ' + socket.user + ' from event ' + room);
+		      socket.leave(room);
+	    }
+	});
+
 	socket.on("frappe.chat.message:typing", function (data) {
 		const user = data.user;
 		const room = get_chat_room(socket, data.room);

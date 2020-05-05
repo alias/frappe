@@ -179,6 +179,7 @@ typings/
 
 # Yarn Integrity file
 .yarn-integrity
+yarn.lock
 
 # dotenv environment variables file
 .env
@@ -189,3 +190,6 @@ typings/
 # cypress
 cypress/screenshots
 cypress/videos
+
+# Bob intellij
+frappe.iml

@@ -1,4 +1,5 @@
 {
+ "actions": [],
  "allow_import": 1,
  "creation": "2013-01-29 10:47:14",
  "description": "Keeps track of all communications",
@@ -92,22 +93,19 @@
   {
    "fieldname": "recipients",
    "fieldtype": "Code",
-   "label": "To",
-   "options": "Email"
+   "label": "To"
   },
   {
    "depends_on": "eval:doc.communication_medium===\"Email\"",
    "fieldname": "cc",
    "fieldtype": "Code",
-   "label": "CC",
-   "options": "Email"
+   "label": "CC"
   },
   {
    "depends_on": "eval:doc.communication_medium===\"Email\"",
    "fieldname": "bcc",
    "fieldtype": "Code",
-   "label": "BCC",
-   "options": "Email"
+   "label": "BCC"
   },
   {
    "depends_on": "eval:in_list([\"Phone\",\"SMS\"],doc.communication_medium)",
@@ -130,6 +128,7 @@
   {
    "fieldname": "content",
    "fieldtype": "Text Editor",
+   "in_global_search": 1,
    "label": "Message",
    "width": "400"
   },
@@ -383,7 +382,8 @@
  ],
  "icon": "fa fa-comment",
  "idx": 1,
- "modified": "2019-10-09 14:22:27.664645",
+ "links": [],
+ "modified": "2020-02-26 16:11:03.369984",
  "modified_by": "Administrator",
  "module": "Core",
  "name": "Communication",

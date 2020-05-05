@@ -12,7 +12,7 @@ source_link = "https://github.com/frappe/frappe"
 app_license = "MIT"
 app_logo_url = '/assets/frappe/images/frappe-framework-logo.png'
 
-develop_version = '12.x.x-develop'
+develop_version = '12.x.x-develop-pcg.1'   # from __init__.__version_pcg__  KEEP THIS!! bench update will fail when node was upgraded
 
 app_email = "info@frappe.io"
 
@@ -36,6 +36,7 @@ app_include_js = [
 	"assets/js/form.min.js",
 	"assets/js/control.min.js",
 	"assets/js/report.min.js",
+	"assets/js/help.js",
 ]
 app_include_css = [
 	"assets/css/desk.min.css",
@@ -139,7 +140,7 @@ doc_events = {
 		],
 		"on_change": [
 			"frappe.social.doctype.energy_point_rule.energy_point_rule.process_energy_points"
-		]
+		],
 	},
 	"Event": {
 		"after_insert": "frappe.integrations.doctype.google_calendar.google_calendar.insert_event_in_google_calendar",

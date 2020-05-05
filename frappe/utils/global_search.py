@@ -81,10 +81,10 @@ def rebuild_for_doctype(doctype):
 		return filters
 
 	meta = frappe.get_meta(doctype)
-	
+
 	if cint(meta.issingle) == 1:
 		return
-	
+
 	if cint(meta.istable) == 1:
 		parent_doctypes = frappe.get_all("DocField", fields="parent", filters={
 			"fieldtype": ["in", frappe.model.table_fields],
@@ -306,7 +306,7 @@ def get_routes_to_index():
 
 def add_route_to_global_search(route):
 	from frappe.website.render import render_page
-	from frappe.tests.test_website import set_request
+	from frappe.utils import set_request
 	frappe.set_user('Guest')
 	frappe.local.no_cache = True
 

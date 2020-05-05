@@ -105,6 +105,10 @@ class AutoRepeat(Document):
 		schedule_details = []
 		start_date = getdate(self.start_date)
 		end_date = getdate(self.end_date)
+		today = frappe.utils.datetime.date.today()
+
+		if start_date < today:
+			start_date = today
 
 		if not self.end_date:
 			next_date = get_next_schedule_date(start_date, self.frequency, self.start_date, self.repeat_on_day, self.repeat_on_last_day)

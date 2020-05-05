@@ -22,7 +22,7 @@ def clean_email_html(html):
 
 	return bleach.clean(clean_script_and_style(html),
 		tags=['div', 'p', 'br', 'ul', 'ol', 'li', 'strong', 'b', 'em', 'i', 'u', 'a',
-			'table', 'thead', 'tbody', 'td', 'tr', 'th', 'pre', 'code',
+			'table', 'thead', 'tbody', 'td', 'tr', 'th', 'pre', 'code', 'blockquote',
 			'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'button', 'img'],
 		attributes=['border', 'colspan', 'rowspan',
 			'src', 'href', 'style', 'id'],

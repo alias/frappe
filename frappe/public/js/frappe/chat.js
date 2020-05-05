@@ -819,6 +819,19 @@ frappe.chat.room.subscribe = function (rooms) {
 	frappe.realtime.publish("frappe.chat.room:subscribe", rooms)
 }
 
+
+/**
+ * @description Unsubscribe current user to said Chat Room(s).
+ *
+ * @param {string|array} rooms - Chat Room(s).
+ *
+ * @example
+ * frappe.chat.room.unsubscribe("CR00001")
+ */
+frappe.chat.room.unsubscribe = function (rooms) {
+	  frappe.realtime.publish("frappe.chat.room:unsubscribe", rooms);
+};
+
 /**
  * @description Get Chat Room history.
  *

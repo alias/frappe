@@ -253,6 +253,7 @@ def get_frontmatter(string):
 
 def setup_source(page_info):
 	'''Get the HTML source of the template'''
+	#fm fix??
 	jenv = frappe.get_jenv()
 	source = jenv.loader.get_source(jenv, page_info.template)[0]
 	html = ''

@@ -372,9 +372,9 @@ def get_contacts(email_strings):
 			except Exception:
 				traceback = frappe.get_traceback()
 				frappe.log_error(traceback)
-
-
-
+		else:
+			contacts.append(contact_name)
+		    
 	return contacts
 
 def add_contact_links_to_communication(communication, contact_name):

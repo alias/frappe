@@ -372,6 +372,8 @@ def get_contacts(email_strings):
 			except Exception:
 				traceback = frappe.get_traceback()
 				frappe.log_error(traceback)
+		else:
+			contacts.append(contact_name)
 
 
 

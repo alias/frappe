@@ -355,7 +355,7 @@ frappe.ui.form.Form = class FrappeForm {
 		this.grids.forEach(grid_obj => {
 			grid_obj.grid.visible_columns = null
 			// reset page number to 1
-			grid_obj.grid.grid_pagination.go_to_page(1);
+			// This is a ugly hotfix from steffen, should be commented back in, as soon as they fix it upstream // grid_obj.grid.grid_pagination.go_to_page(1);
 		});
 		frappe.ui.form.close_grid_form();
 		this.docname = docname;

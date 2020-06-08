@@ -9,7 +9,10 @@ function page_changed(event) {
         $("#toolbar-help .help-entry").remove();
 
         var route = frappe.get_route();
-        addHelpEntryFromModules(route);
+        if (route.idxexOf("setup_wizard") === -1) {
+            addHelpEntryFromModules(route);
+	}
+
     });
 }
 

@@ -8,8 +8,8 @@ function page_changed(event) {
         // hide Helpentry that may be from another doctype
         $("#toolbar-help .help-entry").remove();
 
-        var route = frappe.get_route();
-        if (route.idxexOf("setup_wizard") === -1) {
+        let route = frappe.get_route();
+        if (typeof(route) !== "undefined" && "indexOf" in route && route.indexOf("setup-wizard") === -1) {
             addHelpEntryFromModules(route);
 	}
 

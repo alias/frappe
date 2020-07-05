@@ -190,7 +190,7 @@ def run_ui_tests(app=None, test=None, test_list=None, verbose=False, profile=Fal
 		frappe.flags.ui_test_path = test
 	return _run_unittest(module, verbose=verbose, tests=(), profile=profile)
 
-def _run_unittest(modules, verbose=False, tests=(), profile=False):
+def _run_unittest(modules, verbose=False, tests=(), profile=False, junit_xml_output=None):
 	test_suite = unittest.TestSuite()
 
 	if not isinstance(modules, (list, tuple)):

@@ -13,6 +13,9 @@ from frappe import _, safe_decode
 from frappe.utils import cstr
 from frappe.utils.caching import redis_cache
 from frappe.utils.frappecloud import on_frappecloud
+from frappe.utils.gitutils import get_app_branch
+from frappe.utils.gitutils import get_app_last_commit_ref
+from frappe.utils.gitutils import get_revision
 
 
 def get_change_log(user=None):

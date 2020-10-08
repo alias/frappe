@@ -2,12 +2,13 @@
     <h1>
         <br>
         <a href="https://frappeframework.com">
-            <img src=".github/frappe-framework-logo.svg" height="50">
+            <img src="https://frappeframework.com/files/frappeframework-logo2a3e81.png" height="50">
         </a>
     </h1>
     <h3>
         a web framework with <a href="https://www.youtube.com/watch?v=LOjk3m0wTwg">"batteries included"</a>
     </h3>
+    <h3>***** PCG-WEB VERSION *****</h3>
     <h5>
         it's pronounced - <em>fra-pay</em>
     </h5>

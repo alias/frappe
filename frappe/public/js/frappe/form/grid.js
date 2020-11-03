@@ -903,6 +903,7 @@ export default class Grid {
 			"doctype",
 			"name",
 			"parentfield",
+			"shop_id",
 		]);
 
 		const docfields = frappe.get_meta(this.doctype).fields || [];

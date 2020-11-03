@@ -1113,6 +1113,7 @@ export default class Grid {
 					"doctype",
 					"name",
 					"parentfield",
+					"shop_id",
 				].includes(key)
 			) {
 				d[key] = value;

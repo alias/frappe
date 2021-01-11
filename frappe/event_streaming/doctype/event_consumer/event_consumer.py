@@ -77,8 +77,8 @@ def register_consumer(data):
 	if not frappe.db.exists('User', user):
 		frappe.throw(_('User {0} not found on the producer site').format(user))
 
-	if "System Manager" not in frappe.get_roles(user):
-		frappe.throw(_("Event Subscriber has to be a System Manager."))
+	#if "System Manager" not in frappe.get_roles(user):
+	#	frappe.throw(_("Event Subscriber has to be a System Manager."))
 
 	consumer = frappe.new_doc('Event Consumer')
 	consumer.callback_url = data['event_consumer']

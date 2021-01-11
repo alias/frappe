@@ -204,6 +204,8 @@ def pull_from_node(event_producer):
 	event_producer = frappe.get_doc('Event Producer', event_producer)
 	producer_site = get_producer_site(event_producer.producer_url)
 	last_update = event_producer.get_last_update()
+	print("PUUUULLING STUFF")
+
 
 	(doctypes, mapping_config, naming_config) = get_config(event_producer.producer_doctypes)
 
@@ -505,9 +507,10 @@ def get_mapped_update(update, producer_site):
 def new_event_notification(producer_url):
 	"""Pull data from producer when notified"""
 	enqueued_method = 'frappe.event_streaming.doctype.event_producer.event_producer.pull_from_node'
+	producer_url = "http://172.19.0.2:8000"
+	print("IIIII WAS CALLED", producer_url)
 	jobs = get_jobs()
-	if not jobs or enqueued_method not in jobs[frappe.local.site]:
-		frappe.enqueue(enqueued_method, queue='default', **{'event_producer': producer_url})
+	frappe.enqueue(enqueued_method, queue='default', **{'event_producer': producer_url})
 
 
 @frappe.whitelist()

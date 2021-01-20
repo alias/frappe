@@ -1451,7 +1451,8 @@ DocType: Letter Head,Footer will display correctly only in PDF,Die Fußzeile wir
 DocType: Energy Point Rule,For Document Event,Für Dokumentereignis
 apps/frappe/frappe/core/doctype/user_permission/user_permission_list.js,For Document Type,Für Dokumenttyp
 DocType: DocField,"For Links, enter the DocType as range.
-For Select, enter list of Options, each on a new line.",
+For Select, enter list of Options, each on a new line.","Geben Sie für Links den DocType als Bereich ein. 
+ Geben Sie unter Auswählen eine Liste mit Optionen ein, die jeweils in einer neuen Zeile stehen."
 apps/frappe/frappe/core/doctype/user_permission/user_permission_list.js,For User,Für Benutzer
 DocType: User Permission,For Value,Für Wert
 apps/frappe/frappe/public/js/frappe/views/reports/query_report.js,"For comparison, use >5, <10 or =324. For ranges, use 5:10 (for values between 5 & 10).","Verwenden Sie zum Vergleich&gt; 5, &lt;10 oder = 324. Verwenden Sie für Bereiche 5:10 (für Werte zwischen 5 und 10)."
@@ -1681,7 +1682,7 @@ apps/frappe/frappe/core/doctype/doctype/doctype.py,If Owner,Wenn Inhaber
 apps/frappe/frappe/core/page/permission_manager/permission_manager_help.html,"If a Role does not have access at Level 0, then higher levels are meaningless.","Wenn eine Rolle keinen Zugriff auf Ebene 0 hat, dann sind höhere Ebenen bedeutungslos ."
 DocType: Workflow,"If checked, all other workflows become inactive.","Wenn aktiviert, werden alle anderen Workflows inaktiv."
 DocType: DocField,"If checked, this field will be not overwritten based on Fetch From if a value already exists.","Wenn diese Option aktiviert ist, wird dieses Feld basierend auf Abrufen von nicht überschrieben, wenn bereits ein Wert vorhanden ist."
-DocType: Note,"If checked, this note appears under the top right Help menu",
+DocType: Note,"If checked, this note appears under the top right Help menu","Wenn diese Option aktiviert ist, wird dieser Hinweis im Hilfemenü oben rechts angezeigt"
 DocType: OAuth Client,"If checked, users will not see the Confirm Access dialog.","Falls diese Option aktiviert ist, werden die Nutzer nicht den ""Zugriff bestätigen"" Dialog zu sehen."
 DocType: Role,"If disabled, this role will be removed from all users.","Falls diese Option deaktiviert ist, wird diese Rolle von allen Benutzern entfernt."
 DocType: User,"If enabled,  user can login from any IP Address using Two Factor Auth, this can also be set for all users in System Settings","Wenn diese Option aktiviert ist, kann sich der Benutzer mit der Zwei-Faktor-Authentifizierung von jeder IP-Adresse aus anmelden. Dies kann auch für alle Benutzer in den Systemeinstellungen festgelegt werden"
@@ -1698,9 +1699,9 @@ DocType: Email Account,"If non standard port (e.g. 587). If on Google Cloud, try
 DocType: Email Account,"If non-standard port (e.g. POP3: 995/110, IMAP: 993/143)","Wenn nicht standardmäßiger Port (z. B. POP3: 995/110, IMAP: 993/143)"
 DocType: System Settings,"If not set, the currency precision will depend on number format","Wenn nicht gesetzt, hängt die Währungspräzision vom Zahlenformat ab"
 DocType: Energy Point Rule,"If the condition is satisfied user will be rewarded with the points. eg. doc.status == 'Closed'
-",
-DocType: Note,"If the currently shown DocType Name matches this value, the Note will be shown in the help menu",
-DocType: Note,"If the currently shown module matches this value, the Note will be shown in the help menu",
+","Wenn die Bedingung erfüllt ist, wird der Benutzer mit den Punkten belohnt. z.B. doc.status == 'Geschlossen'"
+DocType: Note,"If the currently shown DocType Name matches this value, the Note will be shown in the help menu","Wenn der aktuell angezeigte DocType-Name mit diesem Wert übereinstimmt, wird der Hinweis im Hilfemenü angezeigt"
+DocType: Note,"If the currently shown module matches this value, the Note will be shown in the help menu","Wenn das aktuell angezeigte Modul diesem Wert entspricht, wird der Hinweis im Hilfemenü angezeigt"
 DocType: Event Producer Document Type,If the document has different field names on the Producer and Consumer's end check this and set up the Mapping,"Wenn das Dokument am Ende von Producer und Consumer unterschiedliche Feldnamen hat, überprüfen Sie dies und richten Sie das Mapping ein"
 DocType: User,"If the user has any role checked, then the user becomes a ""System User"". ""System User"" has access to the desktop","Wenn der Benutzer eine Rolle geprüft hat, wird er ein ""System User"". ""System User"" haben Zugriff auf den Desktop."
 apps/frappe/frappe/core/page/permission_manager/permission_manager_help.html,"If these instructions where not helpful, please add in your suggestions on GitHub Issues.","Wenn diese Anleitung nicht hilfreich war, bitte einen Hinweis in den GitHub-Themen hinzufügen."
@@ -1889,7 +1890,7 @@ DocType: System Settings,Is First Startup,Ist Erstes Startup
 DocType: File,Is Folder,Ist Ordner
 apps/frappe/frappe/public/js/frappe/list/list_filter.js,Is Global,Ist global
 DocType: Post,Is Globally Pinned,Wird global gepinnt
-DocType: Note,Is Help article,
+DocType: Note,Is Help article,Ist Hilfeartikel
 DocType: File,Is Home Folder,Ist Ordner für Startseite
 DocType: Onboarding Step,Is Mandatory,Ist obligatorisch
 DocType: Custom Field,Is Mandatory Field,Ist Pflichtfeld
@@ -2142,8 +2143,8 @@ apps/frappe/frappe/core/doctype/communication/communication.js,Mark as Unread,Al
 DocType: Newsletter,Markdown,Markdown-Format
 DocType: DocField,Markdown Editor,Markdown-Editor
 DocType: Communication,Marked As Spam,Als Spam markiert
-DocType: Note,Marketing Content,
-DocType: Note,Marketing Note,
+DocType: Note,Marketing Content,Marketing-Inhalte
+DocType: Note,Marketing Note,Marketing-Hinweis
 apps/frappe/frappe/desk/page/setup_wizard/install_fixtures.py,Master,Vorlage
 DocType: Bulk Update,Max 500 records at a time,Maximal 500 Datensätze gleichzeitig
 DocType: Web Form,Max Attachment Size (in MB),Maximale Größe des Anhangs (in MB)
@@ -2156,7 +2157,8 @@ apps/frappe/frappe/public/js/frappe/form/form.js,Maximum Attachment Limit for th
 DocType: List View Settings,Maximum Number of Fields,Maximale Anzahl von Feldern
 DocType: Energy Point Rule,Maximum Points,Maximale Punkte
 DocType: Energy Point Rule,"Maximum points allowed after multiplying points with the multiplier value
-(Note: For no limit leave this field empty or set 0)",
+(Note: For no limit leave this field empty or set 0)","Maximal zulässige Punkte nach Multiplikation der Punkte mit dem Multiplikatorwert 
+ (Hinweis: Lassen Sie dieses Feld unbegrenzt leer oder setzen Sie 0)"
 apps/frappe/frappe/model/rename_doc.py,Maximum {0} rows allowed,Maximum von {0} Zeilen erlaubt
 apps/frappe/frappe/public/js/frappe/list/list_sidebar_group_by.js,Me,Mir
 apps/frappe/frappe/core/page/permission_manager/permission_manager_help.html,"Meaning of Submit, Cancel, Amend","Bedeutung von Übertragen, Stornieren, Abändern"
@@ -2252,7 +2254,9 @@ apps/frappe/frappe/utils/password_strength.py,Names and surnames by themselves a
 DocType: DocType,Naming,Bezeichnung
 DocType: DocType,"Naming Options:
 <ol><li><b>field:[fieldname]</b> - By Field</li><li><b>naming_series:</b> - By Naming Series (field called naming_series must be present</li><li><b>Prompt</b> - Prompt user for a name</li><li><b>[series]</b> - Series by prefix (separated by a dot); for example PRE.#####</li>
-<li><b>format:EXAMPLE-{MM}morewords{fieldname1}-{fieldname2}-{#####}</b> - Replace all braced words (fieldnames, date words (DD, MM, YY), series) with their value. Outside braces, any characters can be used.</li></ol>",
+<li><b>format:EXAMPLE-{MM}morewords{fieldname1}-{fieldname2}-{#####}</b> - Replace all braced words (fieldnames, date words (DD, MM, YY), series) with their value. Outside braces, any characters can be used.</li></ol>","Benennungsoptionen: 
+ <ol> <li> <b> Feld: [Feldname] </ b> - Nach Feld </ li> <li> <b> Namensserien: </ b> - Nach Benennungsserie (Feld aufgerufen naming_series muss vorhanden sein </ li> <li> <b> Eingabeaufforderung </ b> - Benutzer zur Eingabe eines Namens auffordern </ li> <li> <b> [Serie] </ b> - Serie nach Präfix (getrennt durch a Punkt); zum Beispiel PRE. ##### </ li> 
+ <li> <b> Format: BEISPIEL- {MM}mehrwoerter{Feldname1}-{Feldname2}-{#####} </ b> - Ersetzen Sie alle geschweiften Wörter (Feldnamen, Datumswörter (TT, MM, JJ), Reihen) durch ihren Wert. Außerhalb von geschweiften Klammern können beliebige Zeichen verwendet werden. </ li> </ ol>"
 DocType: Webhook,Naming Series,Nummernkreis
 apps/frappe/frappe/model/naming.py,Naming Series mandatory,Nummernkreis zwingend erforderlich
 DocType: Web Template,Navbar,Navbar
@@ -2554,10 +2558,10 @@ DocType: Email Account,Outlook.com,Outlook.com
 DocType: Console Log,Output,Ausgabe
 DocType: Package Document Type,Overwrite,Überschreiben
 DocType: Chat Room,Owner,Besitzer
-DocType: Note,PCG_Admin,
-DocType: Note,PCG_Base,
-DocType: Note,PCG_Issues,
-DocType: Note,PCG_Web,
+DocType: Note,PCG_Admin,PCG_Admin
+DocType: Note,PCG_Base,PCG_Base
+DocType: Note,PCG_Issues,PCG_Issues
+DocType: Note,PCG_Web,PCG_Web
 apps/frappe/frappe/public/js/frappe/form/templates/print_layout.html,PDF,PDF
 DocType: Print Settings,PDF Page Size,PDF-Seitengröße
 DocType: Print Settings,PDF Settings,PDF-Einstellungen
@@ -2580,7 +2584,7 @@ apps/frappe/frappe/public/js/frappe/ui/keyboard.js,Page Shortcuts,Seitenkürzel
 apps/frappe/frappe/www/qrcode.py,Page has expired!,Seite ist abgelaufen!
 apps/frappe/frappe/public/js/frappe/views/container.js,Page not found,Seite nicht gefunden
 DocType: Web Page,"Page to show on the website
-",
+",Zeige Seite auf der Website an
 apps/frappe/frappe/public/js/frappe/views/reports/print_tree.html,Page {0} of {1},Seite {0} von {1}
 apps/frappe/frappe/config/core.py,Pages in Desk (place holders),Seiten auf dem Tisch (Platzhalter)
 DocType: SMS Parameter,Parameter,Parameter
@@ -2792,7 +2796,7 @@ DocType: Print Format,Print Format Builder,Programm zum Erstellen von Druckforma
 DocType: Print Format,Print Format Help,Hilfe zu Druckformaten
 DocType: Print Format,Print Format Type,Druckformattyp
 apps/frappe/frappe/www/printview.py,Print Format {0} is disabled,Druckformat {0} ist deaktiviert
-DocType: Print Heading,Print Heading,
+DocType: Print Heading,Print Heading,Überschrift drucken
 DocType: DocField,Print Hide,Beim Drucken verbergen
 DocType: DocField,Print Hide If No Value,Druck verbergen wenn ohne Wert
 apps/frappe/frappe/public/js/frappe/form/print.js,Print Sent to the printer!,Drucken An den Drucker gesendet!
@@ -2905,7 +2909,7 @@ DocType: Notification Recipient,Receiver By Role,Empfänger nach Rolle
 DocType: SMS Settings,Receiver Parameter,Empfängerparameter
 apps/frappe/frappe/desk/page/user_profile/user_profile.html,Recent Activity,Letzte Aktivität
 apps/frappe/frappe/utils/password_strength.py,Recent years are easy to guess.,Die letzten Jahre sind leicht zu erraten.
-DocType: Note,Recipe,
+DocType: Note,Recipe,Rezept
 DocType: Email Queue,Recipient,Empfänger
 DocType: Communication,Recipient Unsubscribed,Empfänger Unsubscribed
 DocType: Auto Repeat,Recipients,Empfänger
@@ -3374,7 +3378,7 @@ apps/frappe/frappe/desk/form/assign_to.py,Shared with the following Users with R
 apps/frappe/frappe/public/js/frappe/form/sidebar/share.js,Shared with {0},Freigegeben für {0}
 DocType: Address,Shipping,Versand
 DocType: Address,Shop,Laden
-DocType: Address,Shop Id,
+DocType: Address,Shop Id,Shop-ID
 DocType: Blogger,Short Name,Kürzel
 apps/frappe/frappe/utils/password_strength.py,Short keyboard patterns are easy to guess,Kurze Tastatur-Muster sind leicht zu erraten
 DocType: Desk Page,Shortcuts,Tastenkombinationen
@@ -3482,7 +3486,7 @@ DocType: Customize Form,Sort Field,Sortierfeld
 DocType: Customize Form,Sort Order,Sortierung
 apps/frappe/frappe/core/doctype/doctype/doctype.py,Sort field {0} must be a valid fieldname,Sortierfeld {0} muss ein gültiger Feldname sein
 DocType: Website Route Redirect,Source,Quelle
-DocType: Note,Source App,
+DocType: Note,Source App,Quellapplikation
 apps/frappe/frappe/desk/page/translation_tool/translation_tool.js,Source Message,Ursprünglicher Text
 DocType: Dashboard Chart Source,Source Name,Quellenname
 DocType: Translation,Source Text,Quellentext
@@ -3722,7 +3726,10 @@ apps/frappe/frappe/public/js/frappe/form/templates/form_sidebar.html,This featur
 DocType: Customize Form Field,"This field will appear only if the fieldname defined here has value OR the rules are true (examples): 
 myfield
 eval:doc.myfield=='My Value'
-eval:doc.age&gt;18",
+eval:doc.age&gt;18","Dieses Feld wird nur angezeigt, wenn der hier definierte Feldname einen Wert hat ODER die Regeln wahr sind (Beispiele): 
+ myfield 
+ eval: doc.myfield == 'My Value' 
+ eval: doc.age & gt; 18"
 apps/frappe/frappe/public/js/frappe/form/layout.js,This form does not have any input,Dieses Formular hat keine Eingabefelder
 apps/frappe/frappe/public/js/frappe/form/form.js,This form has been modified after you have loaded it,"Dieses Formular wurde geändert, nachdem Sie es geladen haben"
 DocType: Address Template,This format is used if country specific format is not found,"Dieses Format wird verwendet, wenn ein länderspezifisches Format nicht gefunden werden kann"
@@ -3786,10 +3793,10 @@ apps/frappe/frappe/desk/doctype/todo/todo_list.js,To Do,To Do
 apps/frappe/frappe/public/js/frappe/form/sidebar/review.js,To User,An Benutzer
 DocType: Auto Repeat,"To add dynamic subject, use jinja tags like
 
-<div><pre><code>New {{ doc.doctype }} #{{ doc.name }}</code></pre></div>",
+<div><pre><code>New {{ doc.doctype }} #{{ doc.name }}</code></pre></div>",Verwenden Sie zum Hinzufügen eines dynamischen Betreffs Jinja-Tags wie |||||| <div> <pre> <code> Neu {{doc.doctype}} # {{doc.name}} </ code> </ pre> </ div>
 DocType: Notification,"To add dynamic subject, use jinja tags like
 
-<div><pre><code>{{ doc.name }} Delivered</code></pre></div>",
+<div><pre><code>{{ doc.name }} Delivered</code></pre></div>",Verwenden Sie zum Hinzufügen eines dynamischen Betreffs Jinja-Tags wie |||||| <div> <pre> <code> {{doc.name}} Geliefert </ code> </ pre> </ div>
 DocType: Communication,To and CC,An und CC
 apps/frappe/frappe/automation/doctype/auto_repeat/auto_repeat.js,"To configure Auto Repeat, enable ""Allow Auto Repeat"" from {0}.","Um die automatische Wiederholung zu konfigurieren, aktivieren Sie &quot;Automatische Wiederholung zulassen&quot; von {0} aus."
 apps/frappe/frappe/www/login.html,To enable it follow the instructions in the following link: {0},Befolgen Sie zum Aktivieren die Anweisungen unter folgendem Link: {0}
@@ -3827,7 +3834,7 @@ DocType: Email Group,Total Subscribers,Gesamtanzahl der Abonnenten
 DocType: Email Account,Total number of emails to sync in initial sync process ,Gesamtzahl der E-Mails im ersten Synchronisierung Prozess zu synchronisieren
 apps/frappe/frappe/public/js/frappe/views/reports/report_view.js,Totals,Summen
 apps/frappe/frappe/public/js/frappe/views/reports/report_view.js,Totals Row,Summenzeile
-DocType: Address,Tour,
+DocType: Address,Tour,Tour
 DocType: Error Snapshot,Traceback,Zurück verfolgen
 DocType: DocType,Track Changes,Änderungen verfolgen
 DocType: Email Account,Track Email Status,E-Mail-Status verfolgen
@@ -3836,7 +3843,9 @@ DocType: DocType,Track Seen,Track gesehen
 DocType: DocType,Track Views,Trackansichten
 DocType: Email Account,"Track if your email has been opened by the recipient.
 <br>
-Note: If you're sending to multiple recipients, even if 1 recipient reads the email, it'll be considered ""Opened""",
+Note: If you're sending to multiple recipients, even if 1 recipient reads the email, it'll be considered ""Opened""","Verfolgen Sie, ob Ihre E-Mail vom Empfänger geöffnet wurde. 
+ <br> 
+ Hinweis: Wenn Sie an mehrere Empfänger senden, wird diese als ""Geöffnet"" betrachtet, auch wenn 1 Empfänger die E-Mail liest."
 DocType: Milestone Tracker,Track milestones for any document,Verfolgen Sie Meilensteine für jedes Dokument
 apps/frappe/frappe/config/automation.py,Tracks milestones on the lifecycle of a document if it undergoes multiple stages.,"Verfolgt Meilensteine im Lebenszyklus eines Dokuments, wenn es mehrere Phasen durchläuft."
 DocType: Transaction Log,Transaction Hash,Transaktions-Hash
@@ -3878,7 +3887,8 @@ DocType: Email Account,UIDVALIDITY,Gültigkeit der eindeutigen Kennung
 DocType: Email Account,UNSEEN,UNGESEHEN
 DocType: DocType,UPPER CASE,GROSSBUCHSTABEN
 DocType: OAuth Client,"URIs for receiving authorization code once the user allows access, as well as failure responses. Typically a REST endpoint exposed by the Client App.
-<br>e.g. http://hostname//api/method/frappe.www.login.login_via_facebook",
+<br>e.g. http://hostname//api/method/frappe.www.login.login_via_facebook","URIs zum Empfangen einer Autorisierungscode, sobald der Benutzer Zugriff gewährt, sowie Fehlerantworten. In der Regel ein REST-Endpunkt, der von der Client-App verfügbar gemacht wird. 
+ <br> z. http: //hostname//api/method/frappe.www.login.login_via_facebook"
 DocType: Footer Item,URL,URL
 DocType: DocType,URL for documentation or help,URL für Dokumentation oder Hilfe
 apps/frappe/frappe/core/doctype/file/file.py,URL must start with 'http://' or 'https://',URL muss mit &quot;http: //&quot; oder &quot;https: //&quot; beginnen
@@ -4335,7 +4345,7 @@ DocType: Workflow State,comment,Kommentar
 DocType: Post,comments,Bemerkungen
 apps/frappe/frappe/public/js/frappe/form/footer/timeline.js,created,erstellt
 apps/frappe/frappe/public/js/frappe/form/footer/timeline.js,created {0},erstellt {0}
-apps/frappe/frappe/public/js/frappe/utils/utils.js,d,
+apps/frappe/frappe/public/js/frappe/utils/utils.js,d,d
 apps/frappe/frappe/core/doctype/version/version_view.html,danger,Gefahr
 DocType: Kanban Board Column,darkgrey,dunkelgrau
 apps/frappe/frappe/core/page/dashboard/dashboard.js,dashboard,Dashboard
@@ -4380,7 +4390,7 @@ DocType: Workflow State,flag,Kennzeichnen
 DocType: Workflow State,folder-close,geschlossener Ordner
 DocType: Workflow State,folder-open,geöffneter Ordner
 DocType: Workflow State,font,Schriftart
-DocType: Address,for pcg_shop,
+DocType: Address,for pcg_shop,für pcg_shop
 DocType: Workflow State,forward,Weiterleiten
 DocType: Workflow State,fullscreen,Vollbild
 apps/frappe/frappe/public/js/frappe/utils/energy_point_utils.js,gained by {0} via automatic rule {1},erhalten von {0} über die automatische Regel {1}
@@ -4390,7 +4400,7 @@ DocType: Workflow State,gift,Geschenk
 DocType: Workflow State,glass,Glas
 DocType: Workflow State,globe,Globus
 DocType: Kanban Board Column,green,Grün
-apps/frappe/frappe/public/js/frappe/utils/utils.js,h,
+apps/frappe/frappe/public/js/frappe/utils/utils.js,h,h
 DocType: Workflow State,hand-down,Pfeil-nach-unten
 DocType: Workflow State,hand-left,Pfeil-nach-links
 DocType: Workflow State,hand-right,Pfeil-nach-rechts
@@ -4418,7 +4428,7 @@ DocType: Desktop Icon,list,Liste
 DocType: Workflow State,list-alt,Liste-Alt
 DocType: Workflow State,lock,sperren
 apps/frappe/frappe/www/third_party_apps.html,logged in,Angemeldet
-apps/frappe/frappe/public/js/frappe/utils/utils.js,m,
+apps/frappe/frappe/public/js/frappe/utils/utils.js,m,m
 DocType: Workflow State,magnet,Magnet
 DocType: Workflow State,map-marker,Plan-Markierer
 DocType: S3 Backup Settings,me-south-1,ich-Süd-1
@@ -4456,7 +4466,7 @@ apps/frappe/frappe/public/js/frappe/file_uploader/FileUploader.vue,or attach a,o
 DocType: Kanban Board Column,orange,Orange
 DocType: Desktop Icon,page,Seite
 DocType: Workflow State,pause,Pause
-DocType: Address,pcg_shop,
+DocType: Address,pcg_shop,pcg_shop
 DocType: Workflow State,pencil,Bleistift
 DocType: Workflow State,picture,Bild
 DocType: Workflow State,plane,eben
@@ -4486,7 +4496,7 @@ DocType: Custom Role,response,Antwort
 apps/frappe/frappe/core/doctype/deleted_document/deleted_document.py,restored {0} as {1},restauriert {0} als {1}
 DocType: Workflow State,retweet,Erneut tweeten
 DocType: Workflow State,road,Straße
-apps/frappe/frappe/public/js/frappe/utils/utils.js,s,
+apps/frappe/frappe/public/js/frappe/utils/utils.js,s,s
 DocType: S3 Backup Settings,sa-east-1,sa-east-1
 DocType: Workflow State,screenshot,Screenshot
 DocType: Workflow State,search,Suche

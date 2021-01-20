@@ -3973,7 +3973,13 @@ apps/frappe/frappe/model/db_query.py,Use of sub-query or function is restricted,
 DocType: System Settings,Use socketio to upload file,Verwenden Sie socketio zum Hochladen der Datei
 DocType: Customize Form,Use this fieldname to generate title,"Verwenden Sie diesen Feldnamen, um den Titel zu erzeugen"
 DocType: Google Settings,Used For Google Maps Integration.,Wird für die Google Maps-Integration verwendet.
-DocType: Note,"Used for filtering the fixtures. Export with:  bench --site YOUR_SITE export-fixtures --app YOUR_APP. Custom means this will not be exported, this is a local note.",
+DocType: Note,"Used for filtering the fixtures 
+Export with: 
+bench --site &lt;site&gt; export-fixtures --app &lt;app&gt;
+
+Where &lt;app&gt; must be one of the available values of this field
+
+Custom means this will not be exported, this is a local note&lt;/app&gt;&lt;/app&gt;&lt;/site&gt;",
 DocType: Assignment Rule User,User,Nutzer
 DocType: Access Log,User ,Benutzer
 apps/frappe/frappe/core/doctype/has_role/has_role.py,User '{0}' already has the role '{1}',Benutzer &#39;{0}&#39; hat bereits die Rolle &#39;{1}&#39;

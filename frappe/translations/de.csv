@@ -3792,7 +3792,7 @@ Reset,Zurücksetzen,
 Review,Rezension,
 Room,Zimmer,
 Room Type,Zimmertyp,
-Save,speichern,
+Save,Speichern,
 Search results for,Suchergebnisse für,
 Select All,Alles auswählen,
 Send,Absenden,
@@ -7837,7 +7837,7 @@ DocType: Contact,Salutation,Anrede
 apps/frappe/frappe/integrations/doctype/webhook/webhook.py,Same Field is entered more than once,Gleiches Feld wird mehrmals eingegeben
 DocType: Custom Script,Sample,Beispiel
 DocType: Assignment Rule Day,Saturday,Samstag
-apps/frappe/frappe/core/doctype/data_import/data_import.js,Save,speichern
+apps/frappe/frappe/core/doctype/data_import/data_import.js,Save,Speichern
 apps/frappe/frappe/core/doctype/user/user.js,Save API Secret: ,API-Geheimnis speichern:
 apps/frappe/frappe/workflow/doctype/workflow/workflow.js,Save Anyway,Auf jeden Fall speichern
 apps/frappe/frappe/public/js/frappe/views/reports/report_view.js,Save As,Speichern als

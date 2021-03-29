@@ -193,6 +193,7 @@ frappe.ui.form.Dashboard = Class.extend({
 		this.data = this.frm.meta.__dashboard || {};
 		if(!this.data.transactions) this.data.transactions = [];
 		if(!this.data.internal_links) this.data.internal_links = {};
+		if(!this.data.external_links) this.data.external_links = [];
 		this.filter_permissions();
 	},
 
@@ -307,7 +308,7 @@ frappe.ui.form.Dashboard = Class.extend({
 		var doctype = $link.attr('data-doctype'),
 			names = $link.attr('data-names') || [];
 
-		if(this.data.internal_links[doctype]) {
+		if(this.data.internal_links[doctype] || this.data.external_links.includes(doctype)) {
 			if(names.length) {
 				frappe.route_options = {'name': ['in', names]};
 			} else {
@@ -368,7 +369,9 @@ frappe.ui.form.Dashboard = Class.extend({
 				// update badges
 				$.each(r.message.count, function(i, d) {
 					if (typeof(d.docnames) !== "undefined"){
-						me.frm.dashboard.set_badge_count(d.name, cint(d.open_count), cint(d.count), d.docnames);
+						let $link = $(me.frm.dashboard.transactions_area).find('.document-link[data-doctype="'+d.name+'"]');
+						$link.attr('data-names', d.docnames.join(','));
+						$link.find('.count').removeClass('hidden').html((d.count > 99) ? '99+' : d.count);
 					} else {
 						me.frm.dashboard.set_badge_count(d.name, cint(d.open_count), cint(d.count));
 					}
@@ -418,7 +421,7 @@ frappe.ui.form.Dashboard = Class.extend({
 				.html((count > 99) ? '99+' : count);
 		}
 
-		if(this.data.internal_links[doctype]) {
+		if(this.data.internal_links[doctype] || this.data.external_links.includes(doctype)) {
 			if(names && names.length) {
 				$link.attr('data-names', names ? names.join(',') : '');
 			} else {

@@ -30,7 +30,7 @@
   {
    "fieldname": "sender",
    "fieldtype": "Data",
-   "in_list_view": 1,
+   "ignore_xss_filter": 1,
    "label": "Sender",
    "options": "Email"
   },
@@ -145,8 +145,8 @@
  "idx": 1,
  "in_create": 1,
  "links": [],
- "modified": "2019-12-11 16:13:53.506640",
- "modified_by": "bs@oekobox-online.de",
+ "modified": "2020-07-17 15:58:15.369419",
+ "modified_by": "Administrator",
  "module": "Email",
  "name": "Email Queue",
  "owner": "Administrator",

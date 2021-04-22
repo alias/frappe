@@ -25,7 +25,6 @@
   "is_shipping_address",
   "disabled",
   "linked_with",
-  "is_your_company_address",
   "links"
  ],
  "fields": [
@@ -76,7 +75,7 @@
   {
    "fieldname": "state",
    "fieldtype": "Data",
-   "label": "State"
+   "label": "State/Province"
   },
   {
    "fieldname": "country",
@@ -108,8 +107,7 @@
   {
    "fieldname": "phone",
    "fieldtype": "Data",
-   "label": "Phone",
-   "options": "pcg_phone"
+   "label": "Phone"
   },
   {
    "fieldname": "fax",
@@ -141,12 +139,6 @@
    "options": "fa fa-pushpin"
   },
   {
-   "default": "0",
-   "fieldname": "is_your_company_address",
-   "fieldtype": "Check",
-   "label": "Is Your Company Address"
-  },
-  {
    "fieldname": "links",
    "fieldtype": "Table",
    "label": "Links",
@@ -156,8 +148,8 @@
  "icon": "fa fa-map-marker",
  "idx": 5,
  "links": [],
- "modified": "2019-12-12 16:52:23.654235",
- "modified_by": "bs@oekobox-online.de",
+ "modified": "2020-10-21 16:14:37.284830",
+ "modified_by": "Administrator",
  "module": "Contacts",
  "name": "Address",
  "name_case": "Title Case",

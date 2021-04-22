@@ -40,6 +40,8 @@ CREATE TABLE `tabDocField` (
   `show_preview_popup` int(1) NOT NULL DEFAULT 0,
   `trigger` varchar(255) DEFAULT NULL,
   `collapsible_depends_on` text,
+  `mandatory_depends_on` text,
+  `read_only_depends_on` text,
   `depends_on` text,
   `permlevel` int(11) NOT NULL DEFAULT 0,
   `ignore_user_permissions` int(1) NOT NULL DEFAULT 0,
@@ -61,6 +63,9 @@ CREATE TABLE `tabDocField` (
   `precision` varchar(255) DEFAULT NULL,
   `length` int(11) NOT NULL DEFAULT 0,
   `translatable` int(1) NOT NULL DEFAULT 0,
+  `hide_border` int(1) NOT NULL DEFAULT 0,
+  `hide_days` int(1) NOT NULL DEFAULT 0,
+  `hide_seconds` int(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`name`),
   KEY `parent` (`parent`),
   KEY `label` (`label`),
@@ -123,7 +128,7 @@ CREATE TABLE `tabDocType Action` (
   `label` varchar(140) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `group` varchar(140) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `action_type` varchar(140) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `action` varchar(140) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `action` text COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   PRIMARY KEY (`name`),
   KEY `parent` (`parent`),
   KEY `modified` (`modified`)
@@ -215,6 +220,9 @@ CREATE TABLE `tabDocType` (
   `allow_guest_to_view` int(1) NOT NULL DEFAULT 0,
   `route` varchar(255) DEFAULT NULL,
   `is_published_field` varchar(255) DEFAULT NULL,
+  `email_append_to` int(1) NOT NULL DEFAULT 0,
+  `subject_field` varchar(255) DEFAULT NULL,
+  `sender_field` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`name`),
   KEY `parent` (`parent`)
 ) ENGINE=InnoDB ROW_FORMAT=COMPRESSED CHARACTER SET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -225,7 +233,7 @@ CREATE TABLE `tabDocType` (
 
 DROP TABLE IF EXISTS `tabSeries`;
 CREATE TABLE `tabSeries` (
-  `name` varchar(100) DEFAULT NULL,
+  `name` varchar(100),
   `current` int(10) NOT NULL DEFAULT 0,
   PRIMARY KEY(`name`)
 ) ENGINE=InnoDB ROW_FORMAT=COMPRESSED CHARACTER SET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -269,7 +277,7 @@ CREATE TABLE `__Auth` (
 	`doctype` VARCHAR(140) NOT NULL,
 	`name` VARCHAR(255) NOT NULL,
 	`fieldname` VARCHAR(140) NOT NULL,
-	`password` VARCHAR(255) NOT NULL,
+	`password` TEXT NOT NULL,
 	`encrypted` INT(1) NOT NULL DEFAULT 0,
 	PRIMARY KEY (`doctype`, `name`, `fieldname`)
 ) ENGINE=InnoDB ROW_FORMAT=COMPRESSED CHARACTER SET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

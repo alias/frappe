@@ -7,9 +7,10 @@ import imaplib
 import re
 import json
 import socket
+import time
 from frappe import _
 from frappe.model.document import Document
-from frappe.utils import validate_email_address, cint, get_datetime, DATE_FORMAT, strip, comma_or, sanitize_html
+from frappe.utils import validate_email_address, cint, cstr, get_datetime, DATE_FORMAT, strip, comma_or, sanitize_html, add_days
 from frappe.utils.user import is_system_user
 from frappe.utils.jinja import render_template
 from frappe.email.smtp import SMTPServer
@@ -24,7 +25,11 @@ from frappe.core.doctype.communication.email import set_incoming_outgoing_accoun
 from frappe.utils.html_utils import clean_email_html
 from frappe.email.utils import get_port
 
-class SentEmailInInbox(Exception): pass
+class SentEmailInInbox(Exception):
+	pass
+
+class InvalidEmailCredentials(frappe.ValidationError):
+	pass
 
 class EmailAccount(Document):
 	def autoname(self):
@@ -51,8 +56,8 @@ class EmailAccount(Document):
 			"name": ("!=", self.name)
 		})
 		if duplicate_email_account:
-			frappe.throw(_("Email ID must be unique, Email Account already exists \
-				for {0}".format(frappe.bold(self.email_id))))
+			frappe.throw(_("Email ID must be unique, Email Account already exists for {0}") \
+				.format(frappe.bold(self.email_id)))
 
 		if frappe.local.flags.in_patch or frappe.local.flags.in_test:
 			return
@@ -85,6 +90,29 @@ class EmailAccount(Document):
 			if self.append_to not in valid_doctypes:
 				frappe.throw(_("Append To can be one of {0}").format(comma_or(valid_doctypes)))
 
+	def before_save(self):
+		messages = []
+		as_list = 1
+		if not self.enable_incoming and self.default_incoming:
+			self.default_incoming = False
+			messages.append(_("{} has been disabled. It can only be enabled if {} is checked.")
+				.format(
+					frappe.bold(_('Default Incoming')),
+					frappe.bold(_('Enable Incoming'))
+				)
+			)
+		if not self.enable_outgoing and self.default_outgoing:
+			self.default_outgoing = False
+			messages.append(_("{} has been disabled. It can only be enabled if {} is checked.")
+				.format(
+						frappe.bold(_('Default Outgoing')),
+						frappe.bold(_('Enable Outgoing'))
+					)
+				)
+		if messages:
+			if len(messages) == 1: (as_list, messages) = (0, messages[0])
+			frappe.msgprint(messages, as_list= as_list, indicator='orange', title=_("Defaults Updated"))
+
 	def on_update(self):
 		"""Check there is only one default of each type."""
 		from frappe.core.doctype.user.user import setup_user_email_inbox
@@ -116,7 +144,8 @@ class EmailAccount(Document):
 			fields = [
 				"name as domain", "use_imap", "email_server",
 				"use_ssl", "smtp_server", "use_tls",
-				"smtp_port", "incoming_port"
+				"smtp_port", "incoming_port", "append_emails_to_sent_folder",
+				"use_ssl_for_outgoing"
 			]
 			return frappe.db.get_value("Email Domain", domain[1], fields, as_dict=True)
 		except Exception:
@@ -128,11 +157,12 @@ class EmailAccount(Document):
 			if not self.smtp_server:
 				frappe.throw(_("{0} is required").format("SMTP Server"))
 
-			server = SMTPServer(login = getattr(self, "login_id", None) \
-					or self.email_id,
-				server = self.smtp_server,
-				port = cint(self.smtp_port),
-				use_tls = cint(self.use_tls)
+			server = SMTPServer(
+				login = getattr(self, "login_id", None) or self.email_id,
+				server=self.smtp_server,
+				port=cint(self.smtp_port),
+				use_tls=cint(self.use_tls),
+				use_ssl=cint(self.use_ssl_for_outgoing)
 			)
 			if self.password and not self.no_smtp_authentication:
 				server.password = self.get_password()
@@ -145,7 +175,7 @@ class EmailAccount(Document):
 			return None
 
 		args = frappe._dict({
-			"email_account":self.name,
+			"email_account": self.name,
 			"host": self.email_server,
 			"use_ssl": self.use_ssl,
 			"username": getattr(self, "login_id", None) or self.email_id,
@@ -163,22 +193,47 @@ class EmailAccount(Document):
 			frappe.throw(_("{0} is required").format("Email Server"))
 
 		email_server = EmailServer(frappe._dict(args))
+		self.check_email_server_connection(email_server, in_receive)
+
+		if not in_receive and self.use_imap:
+			email_server.imap.logout()
+
+		# reset failed attempts count
+		self.set_failed_attempts_count(0)
+
+		return email_server
+
+	def check_email_server_connection(self, email_server, in_receive):
+		# tries to connect to email server and handles failure
 		try:
 			email_server.connect()
 		except (error_proto, imaplib.IMAP4.error) as e:
-			message = e.message.lower().replace(" ","")
-			if in_receive and any(map(lambda t: t in message, ['authenticationfail', 'loginviayourwebbrowser', #abbreviated to work with both failure and failed
-				'loginfailed', 'err[auth]', 'errtemporaryerror'])): #temporary error to deal with godaddy
-				# if called via self.receive and it leads to authentication error, disable incoming
-				# and send email to system manager
-				self.handle_incoming_connect_error(
-					description=_('Authentication failed while receiving emails from Email Account {0}. Message from server: {1}'.format(self.name, e.message))
-				)
+			message = cstr(e).lower().replace(" ","")
+			auth_error_codes = [
+				'authenticationfailed',
+				'loginfailed',
+			]
 
+			other_error_codes = [
+				'err[auth]',
+				'errtemporaryerror',
+				'loginviayourwebbrowser'
+			]
+
+			all_error_codes = auth_error_codes + other_error_codes
+
+			if in_receive and any(map(lambda t: t in message, all_error_codes)):
+				# if called via self.receive and it leads to authentication error,
+				# disable incoming and send email to System Manager
+				error_message = _("Authentication failed while receiving emails from Email Account: {0}.").format(self.name)
+				error_message += "<br>" + _("Message from server: {0}").format(cstr(e))
+				self.handle_incoming_connect_error(description=error_message)
 				return None
 
+			elif not in_receive and any(map(lambda t: t in message, auth_error_codes)):
+				self.throw_invalid_credentials_exception()
 			else:
-				frappe.throw(e.message)
+				frappe.throw(cstr(e))
 
 		except socket.error:
 			if in_receive:
@@ -191,16 +246,16 @@ class EmailAccount(Document):
 				else:
 					frappe.cache().set_value("workers:no-internet", True)
 				return None
-
 			else:
 				raise
-		if not in_receive:
-			if self.use_imap:
-				email_server.imap.logout()
-		# reset failed attempts count
-		self.set_failed_attempts_count(0)
 
-		return email_server
+	@classmethod
+	def throw_invalid_credentials_exception(cls):
+		frappe.throw(
+			_("Incorrect email or password. Please check your login credentials."),
+			exc=InvalidEmailCredentials,
+			title=_("Invalid Credentials")
+		)
 
 	def handle_incoming_connect_error(self, description):
 		if test_internet():
@@ -244,13 +299,13 @@ class EmailAccount(Document):
 			exceptions = []
 			seen_status = []
 			uid_reindexed = False
+			email_server = None
 
 			if frappe.local.flags.in_test:
-				incoming_mails = test_mails
+				incoming_mails = test_mails or []
 			else:
 				email_sync_rule = self.build_email_sync_rule()
 
-				email_server = None
 				try:
 					email_server = self.get_incoming_server(in_receive=True, email_sync_rule=email_sync_rule)
 				except Exception:
@@ -270,6 +325,8 @@ class EmailAccount(Document):
 
 			for idx, msg in enumerate(incoming_mails):
 				uid = None if not uid_list else uid_list[idx]
+				self.flags.notify = True
+
 				try:
 					args = {
 						"uid": uid,
@@ -290,8 +347,13 @@ class EmailAccount(Document):
 
 				else:
 					frappe.db.commit()
-					if communication:
+					if communication and self.flags.notify:
+
+						# If email already exists in the system
+						# then do not send notifications for the same email.
+
 						attachments = []
+
 						if hasattr(communication, '_attachments'):
 							attachments = [d.file_name for d in communication._attachments]
 
@@ -305,7 +367,7 @@ class EmailAccount(Document):
 				raise Exception(frappe.as_json(exceptions))
 
 	def handle_bad_emails(self, email_server, uid, raw, reason):
-		if cint(email_server.settings.use_imap):
+		if email_server and cint(email_server.settings.use_imap):
 			import email
 			try:
 				mail = email.message_from_string(raw)
@@ -358,6 +420,9 @@ class EmailAccount(Document):
 				name = names[0].get("name")
 				# email is already available update communication uid instead
 				frappe.db.set_value("Communication", name, "uid", uid, update_modified=False)
+
+				self.flags.notify = False
+
 				return frappe.get_doc("Communication", name)
 
 		if email.content_type == 'text/html':
@@ -448,16 +513,15 @@ class EmailAccount(Document):
 	def set_sender_field_and_subject_field(self):
 		'''Identify the sender and subject fields from the `append_to` DocType'''
 		# set subject_field and sender_field
-		meta_module = frappe.get_meta_module(self.append_to)
 		meta = frappe.get_meta(self.append_to)
+		self.subject_field = None
+		self.sender_field = None
 
-		self.subject_field = getattr(meta_module, "subject_field", "subject")
-		if not meta.get_field(self.subject_field):
-			self.subject_field = None
+		if hasattr(meta, "subject_field"):
+			self.subject_field = meta.subject_field
 
-		self.sender_field = getattr(meta_module, "sender_field", "sender")
-		if not meta.get_field(self.sender_field):
-			self.sender_field = None
+		if hasattr(meta, "sender_field"):
+			self.sender_field = meta.sender_field
 
 	def find_parent_based_on_subject_and_sender(self, communication, email):
 		'''Find parent document based on subject and sender match'''
@@ -465,26 +529,38 @@ class EmailAccount(Document):
 
 		if self.append_to and self.sender_field:
 			if self.subject_field:
-				# try and match by subject and sender
-				# if sent by same sender with same subject,
-				# append it to old coversation
-				subject = frappe.as_unicode(strip(re.sub(r"(^\s*(fw|fwd|wg)[^:]*:|\s*(re|aw)[^:]*:\s*)*",
-					"", email.subject, 0, flags=re.IGNORECASE)))
+				if '#' in email.subject:
+					# try and match if ID is found
+					# document ID is appended to subject
+					# example "Re: Your email (#OPP-2020-2334343)"
+					parent_id = email.subject.rsplit('#', 1)[-1].strip(' ()')
+					if parent_id:
+						parent = frappe.db.get_all(self.append_to, filters = dict(name = parent_id),
+							fields = 'name')
 
-				parent = frappe.db.get_all(self.append_to, filters={
-					self.sender_field: email.from_email,
-					self.subject_field: ("like", "%{0}%".format(subject)),
-					"creation": (">", (get_datetime() - relativedelta(days=60)).strftime(DATE_FORMAT))
-				}, fields="name")
+				if not parent:
+					# try and match by subject and sender
+					# if sent by same sender with same subject,
+					# append it to old coversation
+					subject = frappe.as_unicode(strip(re.sub(r"(^\s*(fw|fwd|wg)[^:]*:|\s*(re|aw)[^:]*:\s*)*",
+						"", email.subject, 0, flags=re.IGNORECASE)))
 
-				# match only subject field
-				# when the from_email is of a user in the system
-				# and subject is atleast 10 chars long
+					parent = frappe.db.get_all(self.append_to, filters={
+						self.sender_field: email.from_email,
+						self.subject_field: ("like", "%{0}%".format(subject)),
+						"creation": (">", (get_datetime() - relativedelta(days=60)).strftime(DATE_FORMAT))
+					}, fields = "name", limit = 1)
+
 				if not parent and len(subject) > 10 and is_system_user(email.from_email):
+					# match only subject field
+					# when the from_email is of a user in the system
+					# and subject is atleast 10 chars long
 					parent = frappe.db.get_all(self.append_to, filters={
 						self.subject_field: ("like", "%{0}%".format(subject)),
 						"creation": (">", (get_datetime() - relativedelta(days=60)).strftime(DATE_FORMAT))
-					}, fields="name")
+					}, fields = "name", limit = 1)
+
+
 
 			if parent:
 				parent = frappe._dict(doctype=self.append_to, name=parent[0].name)
@@ -530,28 +606,37 @@ class EmailAccount(Document):
 		parent = None
 		in_reply_to = (email.mail.get("In-Reply-To") or "").strip(" <>")
 
-		if in_reply_to and "@{0}".format(frappe.local.site) in in_reply_to:
-			# reply to a communication sent from the system
-			email_queue = frappe.db.get_value('Email Queue', dict(message_id=in_reply_to), ['communication','reference_doctype', 'reference_name'])
-			if email_queue:
-				parent_communication, parent_doctype, parent_name = email_queue
-				if parent_communication:
-					communication.in_reply_to = parent_communication
+		if in_reply_to:
+			if "@{0}".format(frappe.local.site) in in_reply_to:
+				# reply to a communication sent from the system
+				email_queue = frappe.db.get_value('Email Queue', dict(message_id=in_reply_to), ['communication','reference_doctype', 'reference_name'])
+				if email_queue:
+					parent_communication, parent_doctype, parent_name = email_queue
+					if parent_communication:
+						communication.in_reply_to = parent_communication
+				else:
+					reference, domain = in_reply_to.split("@", 1)
+					parent_doctype, parent_name = 'Communication', reference
+
+				if frappe.db.exists(parent_doctype, parent_name):
+					parent = frappe._dict(doctype=parent_doctype, name=parent_name)
+
+					# set in_reply_to of current communication
+					if parent_doctype=='Communication':
+						# communication.in_reply_to = email_queue.communication
+
+						if parent.reference_name:
+							# the true parent is the communication parent
+							parent = frappe.get_doc(parent.reference_doctype,
+								parent.reference_name)
 			else:
-				reference, domain = in_reply_to.split("@", 1)
-				parent_doctype, parent_name = 'Communication', reference
-
-			if frappe.db.exists(parent_doctype, parent_name):
-				parent = frappe._dict(doctype=parent_doctype, name=parent_name)
-
-				# set in_reply_to of current communication
-				if parent_doctype=='Communication':
-					# communication.in_reply_to = email_queue.communication
-
-					if parent.reference_name:
-						# the true parent is the communication parent
-						parent = frappe.get_doc(parent.reference_doctype,
-							parent.reference_name)
+				comm = frappe.db.get_value('Communication',
+						dict(
+							message_id=in_reply_to,
+							creation=['>=', add_days(get_datetime(), -30)]),
+						['reference_doctype', 'reference_name'], as_dict=1)
+				if comm:
+					parent = frappe._dict(doctype=comm.reference_doctype, name=comm.reference_name)
 
 		return parent
 
@@ -651,10 +736,43 @@ class EmailAccount(Document):
 			if frappe.db.exists("Email Account", {"enable_automatic_linking": 1, "name": ('!=', self.name)}):
 				frappe.throw(_("Automatic Linking can be activated only for one Email Account."))
 
+
+	def append_email_to_sent_folder(self, message):
+
+		email_server = None
+		try:
+			email_server = self.get_incoming_server(in_receive=True)
+		except Exception:
+			frappe.log_error(title=_("Error while connecting to email account {0}").format(self.name))
+
+		if not email_server:
+			return
+
+		email_server.connect()
+
+		if email_server.imap:
+			try:
+				email_server.imap.append("Sent", "\\Seen", imaplib.Time2Internaldate(time.time()), message.encode())
+			except Exception:
+				frappe.log_error()
+
 @frappe.whitelist()
 def get_append_to(doctype=None, txt=None, searchfield=None, start=None, page_len=None, filters=None):
-	if not txt: txt = ""
-	return [[d] for d in frappe.get_hooks("email_append_to") if txt in d]
+	txt = txt if txt else ""
+	email_append_to_list = []
+
+	# Set Email Append To DocTypes via DocType
+	filters = {"istable": 0, "issingle": 0, "email_append_to": 1}
+	for dt in frappe.get_all("DocType", filters=filters, fields=["name", "email_append_to"]):
+		email_append_to_list.append(dt.name)
+
+	# Set Email Append To DocTypes set via Customize Form
+	for dt in frappe.get_list("Property Setter", filters={"property": "email_append_to", "value": 1}, fields=["doc_type"]):
+		email_append_to_list.append(dt.doc_type)
+
+	email_append_to = [[d] for d in set(email_append_to_list) if txt in d]
+
+	return email_append_to
 
 def test_internet(host="8.8.8.8", port=53, timeout=3):
 	"""Returns True if internet is connected

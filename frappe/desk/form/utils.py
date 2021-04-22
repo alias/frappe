@@ -47,7 +47,7 @@ def validate_link():
 			except Exception as e:
 				error_message = str(e).split("Unknown column '")
 				fieldname = None if len(error_message)<=1 else error_message[1].split("'")[0]
-				frappe.msgprint(_("Wrong fieldname <b>{0}</b> in add_fetch configuration of custom script").format(fieldname))
+				frappe.msgprint(_("Wrong fieldname <b>{0}</b> in add_fetch configuration of custom client script").format(fieldname))
 				frappe.errprint(frappe.get_traceback())
 
 			if fetch_value:
@@ -56,18 +56,20 @@ def validate_link():
 		frappe.response['valid_value'] = valid_value
 		frappe.response['message'] = 'Ok'
 
+
 @frappe.whitelist()
-def add_comment(reference_doctype, reference_name, content, comment_email):
+def add_comment(reference_doctype, reference_name, content, comment_email, comment_by):
 	"""allow any logged user to post a comment"""
 	doc = frappe.get_doc(dict(
-		doctype = 'Comment',
-		reference_doctype = reference_doctype,
-		reference_name = reference_name,
-		comment_email = comment_email,
-		comment_type = 'Comment'
+		doctype='Comment',
+		reference_doctype=reference_doctype,
+		reference_name=reference_name,
+		comment_email=comment_email,
+		comment_type='Comment',
+		comment_by=comment_by
 	))
 	doc.content = extract_images_from_html(doc, content)
-	doc.insert(ignore_permissions = True)
+	doc.insert(ignore_permissions=True)
 
 	follow_document(doc.reference_doctype, doc.reference_name, frappe.session.user)
 	return doc.as_dict()

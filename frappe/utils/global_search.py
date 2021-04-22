@@ -8,8 +8,8 @@ import re
 import redis
 import json
 import os
-from bs4 import BeautifulSoup
 from frappe.utils import cint, strip_html_tags
+from frappe.utils.html_utils import unescape_html
 from frappe.model.base_document import get_controller
 from six import text_type
 
@@ -141,8 +141,8 @@ def rebuild_for_doctype(doctype):
 				"name": frappe.db.escape(doc.name),
 				"content": frappe.db.escape(' ||| '.join(content or '')),
 				"published": published,
-				"title": frappe.db.escape(title or '')[:int(frappe.db.VARCHAR_LEN)],
-				"route": frappe.db.escape(route or '')[:int(frappe.db.VARCHAR_LEN)]
+				"title": frappe.db.escape((title or '')[:int(frappe.db.VARCHAR_LEN)]),
+				"route": frappe.db.escape((route or '')[:int(frappe.db.VARCHAR_LEN)])
 			})
 	if all_contents:
 		insert_values_for_multiple_docs(all_contents)
@@ -274,6 +274,10 @@ def update_global_search(doc):
 		sync_value_in_queue(value)
 
 def update_global_search_for_all_web_pages():
+	if frappe.conf.get('disable_global_search'):
+		return
+
+	print('Update global search for all web pages...')
 	routes_to_index = get_routes_to_index()
 	for route in routes_to_index:
 		add_route_to_global_search(route)
@@ -305,6 +309,7 @@ def get_routes_to_index():
 
 
 def add_route_to_global_search(route):
+	from bs4 import BeautifulSoup
 	from frappe.website.render import render_page
 	from frappe.utils import set_request
 	frappe.set_user('Guest')
@@ -341,11 +346,8 @@ def get_formatted_value(value, field):
 	:return:
 	"""
 
-	from six.moves.html_parser import HTMLParser
-
 	if getattr(field, 'fieldtype', None) in ["Text", "Text Editor"]:
-		h = HTMLParser()
-		value = h.unescape(frappe.safe_decode(value))
+		value = unescape_html(frappe.safe_decode(value))
 		value = (re.subn(r'<[\s]*(script|style).*?</\1>(?s)', '', text_type(value))[0])
 		value = ' '.join(value.split())
 	return field.label + " : " + strip_html_tags(text_type(value))
@@ -499,22 +501,27 @@ def web_search(text, scope=None, start=0, limit=20):
 		common_query = ''' SELECT `doctype`, `name`, `content`, `title`, `route`
 			FROM `__global_search`
 			WHERE {conditions}
-			LIMIT {limit} OFFSET {start}'''
+			LIMIT %(limit)s OFFSET %(start)s'''
 
-		scope_condition = '`route` like "{}%" AND '.format(scope) if scope else ''
+		scope_condition = '`route` like %(scope)s AND ' if scope else ''
 		published_condition = '`published` = 1 AND '
 		mariadb_conditions = postgres_conditions = ' '.join([published_condition, scope_condition])
 
 		# https://mariadb.com/kb/en/library/full-text-index-overview/#in-boolean-mode
-		text = '"{}"'.format(text)
-		mariadb_conditions += 'MATCH(`content`) AGAINST ({} IN BOOLEAN MODE)'.format(frappe.db.escape(text))
+		mariadb_conditions += 'MATCH(`content`) AGAINST ({} IN BOOLEAN MODE)'.format(frappe.db.escape('+' + text + '*'))
 		postgres_conditions += 'TO_TSVECTOR("content") @@ PLAINTO_TSQUERY({})'.format(frappe.db.escape(text))
 
+		values = {
+			"scope": "".join([scope, "%"]) if scope else '',
+			"limit": limit,
+			"start": start
+		}
+
 		result = frappe.db.multisql({
-			'mariadb': common_query.format(conditions=mariadb_conditions, limit=limit, start=start),
-			'postgres': common_query.format(conditions=postgres_conditions, limit=limit, start=start)
-		}, as_dict=True)
-		tmp_result=[]
+			'mariadb': common_query.format(conditions=mariadb_conditions),
+			'postgres': common_query.format(conditions=postgres_conditions)
+		}, values=values, as_dict=True)
+		tmp_result = []
 		for i in result:
 			if i in results or not results:
 				tmp_result.append(i)

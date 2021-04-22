@@ -43,7 +43,7 @@ class RedisWrapper(redis.Redis):
 
 		try:
 			if expires_in_sec:
-				self.setex(key, expires_in_sec, pickle.dumps(val))
+				self.setex(name=key, time=expires_in_sec, value=pickle.dumps(val))
 			else:
 				self.set(key, pickle.dumps(val))
 
@@ -99,7 +99,7 @@ class RedisWrapper(redis.Redis):
 
 		except redis.exceptions.ConnectionError:
 			regex = re.compile(cstr(key).replace("|", "\|").replace("*", "[\w]*"))
-			return [k for k in list(frappe.local.cache) if regex.match(k.decode())]
+			return [k for k in list(frappe.local.cache) if regex.match(cstr(k))]
 
 	def delete_keys(self, key):
 		"""Delete keys with wildcard `*`."""

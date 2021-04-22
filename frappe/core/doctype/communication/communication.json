@@ -5,6 +5,7 @@
  "description": "Keeps track of all communications",
  "doctype": "DocType",
  "document_type": "Setup",
+ "email_append_to": 1,
  "engine": "InnoDB",
  "field_order": [
   "subject",
@@ -93,19 +94,22 @@
   {
    "fieldname": "recipients",
    "fieldtype": "Code",
-   "label": "To"
+   "label": "To",
+   "options": "Email"
   },
   {
    "depends_on": "eval:doc.communication_medium===\"Email\"",
    "fieldname": "cc",
    "fieldtype": "Code",
-   "label": "CC"
+   "label": "CC",
+   "options": "Email"
   },
   {
    "depends_on": "eval:doc.communication_medium===\"Email\"",
    "fieldname": "bcc",
    "fieldtype": "Code",
-   "label": "BCC"
+   "label": "BCC",
+   "options": "Email"
   },
   {
    "depends_on": "eval:in_list([\"Phone\",\"SMS\"],doc.communication_medium)",
@@ -128,7 +132,6 @@
   {
    "fieldname": "content",
    "fieldtype": "Text Editor",
-   "in_global_search": 1,
    "label": "Message",
    "width": "400"
   },
@@ -149,7 +152,7 @@
    "fieldname": "communication_type",
    "fieldtype": "Select",
    "label": "Communication Type",
-   "options": "Communication\nComment\nChat\nBot\nNotification\nFeedback",
+   "options": "Communication\nComment\nChat\nBot\nNotification\nFeedback\nAutomated Message",
    "read_only": 1,
    "reqd": 1
   },
@@ -194,6 +197,7 @@
    "label": "More Information"
   },
   {
+   "bold": 0,
    "default": "Now",
    "fieldname": "communication_date",
    "fieldtype": "Datetime",
@@ -383,7 +387,7 @@
  "icon": "fa fa-comment",
  "idx": 1,
  "links": [],
- "modified": "2020-02-26 16:11:03.369984",
+ "modified": "2021-03-25 09:44:28.963538",
  "modified_by": "Administrator",
  "module": "Core",
  "name": "Communication",
@@ -422,6 +426,15 @@
    "write": 1
   },
   {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "role": "Inbox User"
+  },
+  {
    "delete": 1,
    "email": 1,
    "if_owner": 1,
@@ -430,8 +443,10 @@
   }
  ],
  "search_fields": "subject",
+ "sender_field": "sender",
  "sort_field": "modified",
  "sort_order": "DESC",
+ "subject_field": "subject",
  "title_field": "subject",
  "track_changes": 1,
  "track_seen": 1

@@ -25,7 +25,9 @@ frappe.webhook = {
 					}
 				}
 
-				frappe.meta.get_docfield("Webhook Data", "fieldname", frm.doc.name).options = [""].concat(fields);
+				frm.fields_dict.webhook_data.grid.update_docfield_property(
+					'fieldname', 'options', [""].concat(fields)
+				);
 			});
 		}
 	},
@@ -66,6 +68,10 @@ frappe.ui.form.on('Webhook', {
 
 	webhook_doctype: (frm) => {
 		frappe.webhook.set_fieldname_select(frm);
+	},
+
+	enable_security: (frm) => {
+		frm.toggle_reqd('webhook_secret', frm.doc.enable_security);
 	}
 });
 

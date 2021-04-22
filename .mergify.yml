@@ -1,12 +1,13 @@
 pull_request_rules:
   - name: Automatic merge on CI success and review
     conditions:
-      - status-success=Codacy/PR Quality Review
+      - status-success=Sider
       - status-success=Semantic Pull Request
-      - status-success=continuous-integration/travis-ci/pr
-      - status-success=security/snyk - package.json (frappe)
-      - status-success=security/snyk - requirements.txt (frappe)
-      - label!=don't-merge
+      - status-success=Python MariaDB
+      - status-success=Python PostgreSQL
+      - status-success=UI MariaDB
+      - status-success=security/snyk (frappe)
+      - label!=dont-merge
       - label!=squash
       - "#approved-reviews-by>=1"
     actions:
@@ -14,12 +15,12 @@ pull_request_rules:
         method: merge
   - name: Automatic squash on CI success and review
     conditions:
-      - status-success=Codacy/PR Quality Review
-      - status-success=Semantic Pull Request
-      - status-success=continuous-integration/travis-ci/pr
-      - status-success=security/snyk - package.json (frappe)
-      - status-success=security/snyk - requirements.txt (frappe)
-      - label!=don't-merge
+      - status-success=Sider
+      - status-success=Python MariaDB
+      - status-success=Python PostgreSQL
+      - status-success=UI MariaDB
+      - status-success=security/snyk (frappe)
+      - label!=dont-merge
       - label=squash
       - "#approved-reviews-by>=1"
     actions:

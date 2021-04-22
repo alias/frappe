@@ -6,7 +6,7 @@ Feature requests are also a great way to take the product forward. New ideas can
 
 When you are raising an Issue, you should keep a few things in mind. Remember that the developer does not have access to your machine so you must give all the information you can while raising an Issue. If you are suggesting a feature, you should be very clear about what you want.
 
-The Issue list is not the right place to ask a question or start a general discussion. If you want to do that , then the right place is the forum [https://discuss.frappe.io](https://discuss.frappe.io).
+The Issue list is not the right place to ask a question or start a general discussion. If you want to do that , then the right place is the forum ~~<https://discuss.frappe.io>~~ => [stackoverflow](https://stackoverflow.com/questions/tagged/frappe) tagged under `frappe`.
 
 ### Reply and Closing Policy
 
@@ -15,7 +15,7 @@ If your issue is not clear or does not meet the guidelines, then it will be clos
 ### General Issue Guidelines
 
 1. **Search existing Issues:** Before raising a Issue, search if it has been raised before. Maybe add a 👍 or give additional help by creating a mockup if it is not already created.
-2. **Report each issue separately:** Don't club multiple, unreleated issues in one note.
+2. **Report each issue separately:** Don't club multiple, unrelated issues in one note.
 3. **Brief:** Please don't include long explanations. Use screenshots and bullet points instead of descriptive paragraphs.
 
 ### Bug Report Guidelines

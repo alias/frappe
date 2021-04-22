@@ -6,7 +6,7 @@ export default class GridPagination {
 	}
 
 	setup_pagination() {
-		this.page_length = 200;
+		this.page_length = 50;
 		this.page_index = 1;
 		this.total_pages = Math.ceil(this.grid.data.length/this.page_length);
 
@@ -14,7 +14,6 @@ export default class GridPagination {
 	}
 
 	render_pagination() {
-		
 		if (this.grid.data.length <= this.page_length) {
 			this.wrapper.find('.grid-pagination').html('');
 		} else {
@@ -68,19 +67,17 @@ export default class GridPagination {
 		let page_text_html = `<div class="page-text">
 				<span class="current-page-number page-number">${__(this.page_index)}</span>
 				<span>${__('of')}</span>
-				<span class="total-page-number page-number"> ${__(this.total_pages)} </span> 
+				<span class="total-page-number page-number"> ${__(this.total_pages)} </span>
 			</div>`;
 
-		return $(`<button class="btn btn-default btn-xs first-page"">
-				<span class="first-page-icon">&laquo;</span>
+		return $(`<button class="btn btn-secondary btn-xs first-page"">
 				<span>${__('First')}</span>
 			</button>
-			<a class="prev-page">&#8249;</a>
+			<button class="btn btn-secondary btn-xs prev-page">${frappe.utils.icon('left', 'xs')}</button>
 			${page_text_html}
-			<a class="next-page">&#8250;</a>
-			<button class="btn btn-default btn-xs last-page">
+			<button class="btn btn-secondary btn-xs next-page">${frappe.utils.icon('right', 'xs')}</button>
+			<button class="btn btn-secondary btn-xs last-page">
 				<span>${__('Last')}</span>
-				<span class="first-page-icon">&raquo;</span>
 			</button>`);
 	}
 
@@ -98,7 +95,7 @@ export default class GridPagination {
 		}
 	}
 
-	go_to_page(index) {
+	go_to_page(index, from_refresh) {
 		if (!index) {
 			index = this.page_index;
 		} else {
@@ -111,6 +108,9 @@ export default class GridPagination {
 		}
 
 		this.update_page_numbers();
+		if (!from_refresh) {
+			this.grid.scroll_to_top();
+		}
 	}
 
 	go_to_last_page_to_add_row() {
@@ -118,10 +118,12 @@ export default class GridPagination {
 		let page_length = this.page_length;
 		if (this.grid.data.length == page_length*total_pages) {
 			this.go_to_page(total_pages + 1);
+			frappe.utils.scroll_to(this.wrapper);
+		} else if (this.page_index == this.total_pages) {
+			return;
 		} else {
 			this.go_to_page(total_pages);
 		}
-		frappe.utils.scroll_to(this.wrapper);
 	}
 
 	get_result_length() {

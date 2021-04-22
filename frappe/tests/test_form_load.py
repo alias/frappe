@@ -24,7 +24,7 @@ class TestFormLoad(unittest.TestCase):
 	def test_fieldlevel_permissions_in_load(self):
 		blog = frappe.get_doc({
 			"doctype": "Blog Post",
-			"blog_category": "_Test Blog Category 1",
+			"blog_category": "-test-blog-category-1",
 			"blog_intro": "Test Blog Intro",
 			"blogger": "_Test Blogger 1",
 			"content": "Test Blog Content",
@@ -40,13 +40,29 @@ class TestFormLoad(unittest.TestCase):
 		user.remove_roles(*user_roles)
 		user.add_roles('Blogger')
 
-		make_property_setter('Blog Post', 'published', 'permlevel', 1, 'Int')
+		blog_post_property_setter = make_property_setter('Blog Post', 'published', 'permlevel', 1, 'Int')
 		reset('Blog Post')
+
+		# test field level permission before role level permissions are defined
+		frappe.set_user(user.name)
+		blog_doc = get_blog(blog.name)
+
+		self.assertEqual(blog_doc.published, None)
+
+		# this will be ignored because user does not
+		# have write access on `published` field (or on permlevel 1 fields)
+		blog_doc.published = 1
+		blog_doc.save()
+
+		# since published field has higher permlevel
+		self.assertEqual(blog_doc.published, 0)
+
+		# test field level permission after role level permissions are defined
+		frappe.set_user('Administrator')
 		add('Blog Post', 'Website Manager', 1)
 		update('Blog Post', 'Website Manager', 1, 'write', 1)
 
 		frappe.set_user(user.name)
-
 		blog_doc = get_blog(blog.name)
 
 		self.assertEqual(blog_doc.name, blog.name)
@@ -57,6 +73,7 @@ class TestFormLoad(unittest.TestCase):
 		# have write access on `published` field (or on permlevel 1 fields)
 		blog_doc.published = 1
 		blog_doc.save()
+
 		# since published field has higher permlevel
 		self.assertEqual(blog_doc.published, 0)
 
@@ -79,6 +96,9 @@ class TestFormLoad(unittest.TestCase):
 		user.remove_roles('Blogger', 'Website Manager')
 		user.add_roles(*user_roles)
 
+		blog_doc.delete()
+		frappe.delete_doc(blog_post_property_setter.doctype, blog_post_property_setter.name)
+
 	def test_fieldlevel_permissions_in_load_for_child_table(self):
 		contact = frappe.new_doc('Contact')
 		contact.first_name = '_Test Contact 1'
@@ -91,7 +111,7 @@ class TestFormLoad(unittest.TestCase):
 		user.remove_roles(*user_roles)
 		user.add_roles('Accounts User')
 
-		make_property_setter('Contact Phone', 'phone', 'permlevel', 1, 'Data')
+		make_property_setter('Contact Phone', 'phone', 'permlevel', 1, 'Int')
 		reset('Contact Phone')
 		add('Contact', 'Sales User', 1)
 		update('Contact', 'Sales User', 1, 'write', 1)
@@ -120,6 +140,8 @@ class TestFormLoad(unittest.TestCase):
 		# reset user roles
 		user.remove_roles('Accounts User', 'Sales User')
 		user.add_roles(*user_roles)
+
+		contact.delete()
 
 
 def get_blog(blog_name):

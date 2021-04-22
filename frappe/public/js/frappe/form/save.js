@@ -21,7 +21,7 @@ frappe.ui.form.save = function (frm, action, callback, btn) {
 		remove_empty_rows();
 
 		$(frm.wrapper).addClass('validated-form');
-		if (check_mandatory()) {
+		if ((action !== 'Save' || frm.is_dirty()) && check_mandatory()) {
 			_call({
 				method: "frappe.desk.form.save.savedocs",
 				args: { doc: frm.doc, action: action },
@@ -36,6 +36,7 @@ frappe.ui.form.save = function (frm, action, callback, btn) {
 				freeze_message: freeze_message
 			});
 		} else {
+			!frm.is_dirty() && frappe.show_alert({message: __("No changes in document"), indicator: "orange"});
 			$(btn).prop("disabled", false);
 		}
 	};
@@ -111,7 +112,6 @@ frappe.ui.form.save = function (frm, action, callback, btn) {
 	};
 
 	var check_mandatory = function () {
-		var me = this;
 		var has_errors = false;
 		frm.scroll_set = false;
 
@@ -123,8 +123,8 @@ frappe.ui.form.save = function (frm, action, callback, btn) {
 
 			$.each(frappe.meta.docfield_list[doc.doctype] || [], function (i, docfield) {
 				if (docfield.fieldname) {
-					var df = frappe.meta.get_docfield(doc.doctype,
-						docfield.fieldname, frm.doc.name);
+					const df = frappe.meta.get_docfield(doc.doctype,
+						docfield.fieldname, doc.name);
 
 					if (df.fieldtype === "Fold") {
 						folded = frm.layout.folded;
@@ -165,17 +165,15 @@ frappe.ui.form.save = function (frm, action, callback, btn) {
 					indicator: 'red',
 					title: __('Missing Fields')
 				});
+				frm.refresh();
 			}
 		});
 
 		return !has_errors;
 	};
 
-	var scroll_to = function (fieldname) {
-		var f = cur_frm.fields_dict[fieldname];
-		if (f) {
-			$(document).scrollTop($(f.wrapper).offset().top - 60);
-		}
+	const scroll_to = (fieldname) => {
+		frm.scroll_to_field(fieldname);
 		frm.scroll_set = true;
 	};
 
@@ -213,10 +211,6 @@ frappe.ui.form.save = function (frm, action, callback, btn) {
 			always: function (r) {
 				$(btn).prop("disabled", false);
 				frappe.ui.form.is_saving = false;
-
-				if (!r.exc) {
-					frappe.show_alert({message: __('Saved'), indicator: 'green'});
-				}
 
 				if (r) {
 					var doc = r.docs && r.docs[0];

@@ -5,6 +5,7 @@
 from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
+from frappe.utils import unique
 
 class Tag(Document):
 	pass
@@ -23,6 +24,17 @@ def add_tag(tag, dt, dn, color=None):
 	DocTags(dt).add(dn, tag)
 
 	return tag
+
+@frappe.whitelist()
+def add_tags(tags, dt, docs, color=None):
+	"adds a new tag to a record, and creates the Tag master"
+	tags = frappe.parse_json(tags)
+	docs = frappe.parse_json(docs)
+	for doc in docs:
+		for tag in tags:
+			DocTags(dt).add(doc, tag)
+
+	# return tag
 
 @frappe.whitelist()
 def remove_tag(tag, dt, dn):
@@ -81,7 +93,7 @@ class DocTags:
 		if not tl:
 			tags = ''
 		else:
-			tl = list(set(filter(lambda x: x, tl)))
+			tl = unique(filter(lambda x: x, tl))
 			tags = ',' + ','.join(tl)
 		try:
 			frappe.db.sql("update `tab%s` set _user_tags=%s where name=%s" % \

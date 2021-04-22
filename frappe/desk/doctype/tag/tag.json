@@ -1,13 +1,11 @@
 {
- "actions": [],
+ "allow_rename": 1,
  "autoname": "Prompt",
  "creation": "2016-05-25 09:43:44.767581",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "description",
-  "allowed_doctypes",
-  "forbidden_doctypes"
+  "description"
  ],
  "fields": [
   {
@@ -15,22 +13,9 @@
    "fieldtype": "Small Text",
    "in_list_view": 1,
    "label": "Description"
-  },
-  {
-   "fieldname": "allowed_doctypes",
-   "fieldtype": "Table",
-   "label": "Allowed Doctypes",
-   "options": "PCG Tag Doctype"
-  },
-  {
-   "fieldname": "forbidden_doctypes",
-   "fieldtype": "Table",
-   "label": "Forbidden Doctypes",
-   "options": "PCG Tag Doctype"
   }
  ],
- "links": [],
- "modified": "2020-04-27 16:13:36.228279",
+ "modified": "2019-09-25 17:47:41.712237",
  "modified_by": "Administrator",
  "module": "Desk",
  "name": "Tag",

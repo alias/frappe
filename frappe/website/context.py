@@ -23,13 +23,19 @@ def get_context(path, args=None):
 	else:
 		context["path"] = path
 
+	context.canonical = frappe.utils.get_url(frappe.utils.escape_html(context.path))
 	context.route = context.path
-
 	context = build_context(context)
 
 	# set using frappe.respond_as_web_page
 	if hasattr(frappe.local, 'response') and frappe.local.response.get('context'):
 		context.update(frappe.local.response.context)
+
+	# to be able to inspect the context dict
+	# Use the macro "inspect" from macros.html
+	context._context_dict = context
+
+	context.developer_mode = frappe.conf.developer_mode
 
 	return context
 
@@ -44,11 +50,15 @@ def update_controller_context(context, controller):
 				context[prop] = getattr(module, prop)
 
 		if hasattr(module, "get_context"):
+			import inspect
 			try:
-				ret = module.get_context(context)
+				if inspect.getargspec(module.get_context).args:
+					ret = module.get_context(context)
+				else:
+					ret = module.get_context()
 				if ret:
 					context.update(ret)
-			except (frappe.PermissionError, frappe.DoesNotExistError, frappe.Redirect):
+			except (frappe.PermissionError, frappe.PageDoesNotExistError, frappe.Redirect):
 				raise
 			except:
 				if not frappe.flags.in_migrate:
@@ -72,7 +82,7 @@ def build_context(context):
 	# for backward compatibility
 	context.docs_base_url = '/docs'
 
-	context.update(get_website_settings())
+	context.update(get_website_settings(context))
 	context.update(frappe.local.conf.get("website_context") or {})
 
 	# provide doc
@@ -113,17 +123,28 @@ def build_context(context):
 	# determine templates to be used
 	if not context.base_template_path:
 		app_base = frappe.get_hooks("base_template")
-		context.base_template_path = app_base[0] if app_base else "templates/base.html"
+		context.base_template_path = app_base[-1] if app_base else "templates/base.html"
 
 	if context.title_prefix and context.title and not context.title.startswith(context.title_prefix):
 		context.title = '{0} - {1}'.format(context.title_prefix, context.title)
+
+	# apply context from hooks
+	update_website_context = frappe.get_hooks('update_website_context')
+	for method in update_website_context:
+		values = frappe.get_attr(method)(context)
+		if values:
+			context.update(values)
 
 	return context
 
 def load_sidebar(context, sidebar_json_path):
 	with open(sidebar_json_path, 'r') as sidebarfile:
-		context.sidebar_items = json.loads(sidebarfile.read())
-		context.show_sidebar = 1
+		try:
+			sidebar_json = sidebarfile.read()
+			context.sidebar_items = json.loads(sidebar_json)
+			context.show_sidebar = 1
+		except json.decoder.JSONDecodeError:
+			frappe.throw('Invalid Sidebar JSON at ' + sidebar_json_path)
 
 def get_sidebar_json_path(path, look_for=False):
 	'''
@@ -215,43 +236,49 @@ def add_sidebar_data(context):
 def add_metatags(context):
 	tags = frappe._dict(context.get("metatags") or {})
 
-	if tags:
-		if not "twitter:card" in tags:
-			tags["twitter:card"] = "summary_large_image"
+	if "og:type" not in tags:
+		tags["og:type"] = "article"
 
-		if not "og:type" in tags:
-			tags["og:type"] = "article"
+	if "title" not in tags and context.title:
+		tags["title"] = context.title
 
-		if tags.get("name"):
-			tags["og:title"] = tags["twitter:title"] = tags["name"]
+	title = tags.get("name") or tags.get("title")
+	if title:
+		tags["og:title"] = tags["twitter:title"] = title
+		tags["twitter:card"] = "summary"
 
-		if tags.get("title"):
-			tags["og:title"] = tags["twitter:title"] = tags["title"]
+	if "description" not in tags and context.description:
+		tags["description"] = context.description
 
-		if tags.get("description"):
-			tags["og:description"] = tags["twitter:description"] = tags["description"]
+	description = tags.get("description")
+	if description:
+		tags["og:description"] = tags["twitter:description"] = description
 
-		image = tags.get('image', context.image or None)
-		if image:
-			tags["og:image"] = tags["twitter:image:src"] = tags["image"] = frappe.utils.get_url(image)
+	if "image" not in tags and context.image:
+		tags["image"] = context.image
 
-		if context.path:
-			tags['og:url'] = tags['url'] = frappe.utils.get_url(context.path)
+	image = tags.get("image")
+	if image:
+		tags["og:image"] = tags["twitter:image"] = tags["image"] = frappe.utils.get_url(image)
+		tags['twitter:card'] = "summary_large_image"
 
-		if context.published_on:
-			tags['datePublished'] = context.published_on
+	if "author" not in tags and context.author:
+		tags["author"] = context.author
 
-		if context.author:
-			tags['author'] = context.author
+	tags["og:url"] = tags["url"] = frappe.utils.get_url(context.path)
 
-		if context.description:
-			tags['description'] = context.description
+	if "published_on" not in tags and context.published_on:
+		tags["published_on"] = context.published_on
 
-		tags['language'] = frappe.local.lang or 'en'
+	if "published_on" in tags:
+		tags["datePublished"] = tags["published_on"]
+		del tags["published_on"]
+
+	tags["language"] = frappe.local.lang or "en"
 
 	# Get meta tags from Website Route meta
 	# they can override the defaults set above
-	route = context.route
+	route = context.path
 	if route == '':
 		# homepage
 		route = frappe.db.get_single_value('Website Settings', 'home_page')

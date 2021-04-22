@@ -2,13 +2,13 @@ import WebFormList from './web_form_list'
 import WebForm from './web_form'
 
 frappe.ready(function() {
+	let query_params = frappe.utils.get_query_params();
 	let wrapper = $(".web-form-wrapper");
-	let is_list = parseInt(wrapper.data('is-list'));
+	let is_list = parseInt(wrapper.data('is-list')) || query_params.is_list;
 	let webform_doctype = wrapper.data('web-form-doctype');
 	let webform_name = wrapper.data('web-form');
 	let login_required = parseInt(wrapper.data('login-required'));
 	let allow_delete = parseInt(wrapper.data('allow-delete'));
-	let query_params = frappe.utils.get_query_params();
 	let doc_name = query_params.name || '';
 	let is_new = query_params.new;
 
@@ -38,7 +38,7 @@ frappe.ready(function() {
 			settings: {
 				allow_delete
 			}
-		})
+		});
 	}
 
 	function show_form() {
@@ -85,6 +85,7 @@ frappe.ready(function() {
 
 		function setup_fields(form_data) {
 			form_data.web_form.web_form_fields.map(df => {
+				df.is_web_form = true;
 				if (df.fieldtype === "Table") {
 					df.get_data = () => {
 						let data = [];
@@ -95,12 +96,16 @@ frappe.ready(function() {
 					};
 
 					df.fields = form_data[df.fieldname];
+					$.each(df.fields || [], function(_i, field) {
+						if (field.fieldtype === "Link") {
+							field.only_select = true;
+						}
+						field.is_web_form = true;
+					});
 
 					if (df.fieldtype === "Attach") {
 						df.is_private = true;
 					}
-
-					df.is_web_form = true;
 
 					delete df.parent;
 					delete df.parentfield;
@@ -113,8 +118,9 @@ frappe.ready(function() {
 					df.only_select = true;
 				}
 				if (["Attach", "Attach Image"].includes(df.fieldtype)) {
-					if (!df.options)
+					if (typeof df.options !== "object") {
 						df.options = {};
+					}
 					df.options.disable_file_browser = true;
 				}
 			});

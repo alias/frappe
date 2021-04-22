@@ -1,4 +1,5 @@
 {
+ "actions": [],
  "autoname": "DL.####",
  "creation": "2013-01-29 17:55:08",
  "doctype": "DocType",
@@ -9,8 +10,9 @@
   "doc_type",
   "properties",
   "label",
-  "default_print_format",
   "max_attachments",
+  "search_fields",
+  "column_break_5",
   "allow_copy",
   "istable",
   "editable_grid",
@@ -19,17 +21,29 @@
   "track_views",
   "allow_auto_repeat",
   "allow_import",
-  "image_view",
-  "column_break_5",
+  "fields_section_break",
+  "fields",
+  "naming_section",
+  "autoname",
+  "view_settings_section",
   "title_field",
   "image_field",
-  "search_fields",
+  "default_print_format",
+  "column_break_29",
+  "show_preview_popup",
+  "image_view",
+  "email_settings_section",
+  "email_append_to",
+  "sender_field",
+  "subject_field",
+  "document_actions_section",
+  "actions",
+  "document_links_section",
+  "links",
   "section_break_8",
   "sort_field",
   "column_break_10",
-  "sort_order",
-  "fields_section_break",
-  "fields"
+  "sort_order"
  ],
  "fields": [
   {
@@ -124,9 +138,11 @@
    "label": "Search Fields"
   },
   {
+   "collapsible": 1,
    "depends_on": "doc_type",
    "fieldname": "section_break_8",
-   "fieldtype": "Section Break"
+   "fieldtype": "Section Break",
+   "label": "List Settings"
   },
   {
    "fieldname": "sort_field",
@@ -155,7 +171,8 @@
    "fieldname": "fields",
    "fieldtype": "Table",
    "label": "Fields",
-   "options": "Customize Form Field"
+   "options": "Customize Form Field",
+   "reqd": 1
   },
   {
    "default": "0",
@@ -174,13 +191,99 @@
    "fieldname": "allow_import",
    "fieldtype": "Check",
    "label": "Allow Import (via Data Import Tool)"
+  },
+  {
+   "depends_on": "email_append_to",
+   "fieldname": "subject_field",
+   "fieldtype": "Data",
+   "label": "Subject Field"
+  },
+  {
+   "depends_on": "email_append_to",
+   "fieldname": "sender_field",
+   "fieldtype": "Data",
+   "label": "Sender Field",
+   "mandatory_depends_on": "email_append_to"
+  },
+  {
+   "default": "0",
+   "fieldname": "email_append_to",
+   "fieldtype": "Check",
+   "label": "Allow document creation via Email"
+  },
+  {
+   "default": "0",
+   "fieldname": "show_preview_popup",
+   "fieldtype": "Check",
+   "label": "Show Preview Popup"
+  },
+  {
+   "collapsible": 1,
+   "depends_on": "doc_type",
+   "fieldname": "view_settings_section",
+   "fieldtype": "Section Break",
+   "label": "View Settings"
+  },
+  {
+   "fieldname": "column_break_29",
+   "fieldtype": "Column Break"
+  },
+  {
+   "collapsible": 1,
+   "collapsible_depends_on": "email_append_to",
+   "depends_on": "doc_type",
+   "fieldname": "email_settings_section",
+   "fieldtype": "Section Break",
+   "label": "Email Settings"
+  },
+  {
+   "collapsible": 1,
+   "collapsible_depends_on": "links",
+   "depends_on": "doc_type",
+   "fieldname": "document_links_section",
+   "fieldtype": "Section Break",
+   "label": "Document Links"
+  },
+  {
+   "fieldname": "links",
+   "fieldtype": "Table",
+   "label": "Links",
+   "options": "DocType Link"
+  },
+  {
+   "collapsible": 1,
+   "collapsible_depends_on": "actions",
+   "depends_on": "doc_type",
+   "fieldname": "document_actions_section",
+   "fieldtype": "Section Break",
+   "label": "Document Actions"
+  },
+  {
+   "fieldname": "actions",
+   "fieldtype": "Table",
+   "label": "Actions",
+   "options": "DocType Action"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "naming_section",
+   "fieldtype": "Section Break",
+   "label": "Naming"
+  },
+  {
+   "description": "Naming Options:\n<ol><li><b>field:[fieldname]</b> - By Field</li><li><b>naming_series:</b> - By Naming Series (field called naming_series must be present</li><li><b>Prompt</b> - Prompt user for a name</li><li><b>[series]</b> - Series by prefix (separated by a dot); for example PRE.#####</li>\n<li><b>format:EXAMPLE-{MM}morewords{fieldname1}-{fieldname2}-{#####}</b> - Replace all braced words (fieldnames, date words (DD, MM, YY), series) with their value. Outside braces, any characters can be used.</li></ol>",
+   "fieldname": "autoname",
+   "fieldtype": "Data",
+   "label": "Auto Name"
   }
  ],
  "hide_toolbar": 1,
  "icon": "fa fa-glass",
  "idx": 1,
+ "index_web_pages_for_search": 1,
  "issingle": 1,
- "modified": "2019-10-08 11:16:36.698006",
+ "links": [],
+ "modified": "2021-02-16 15:22:11.108256",
  "modified_by": "Administrator",
  "module": "Custom",
  "name": "Customize Form",

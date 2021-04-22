@@ -11,6 +11,8 @@ frappe.ui.form.ControlTableMultiSelect = frappe.ui.form.ControlLink.extend({
 
 		// used as an internal model to store values
 		this.rows = [];
+		// used as an internal model to filter awesomplete values
+		this._rows_list = [];
 
 		this.$input_area.on('click', (e) => {
 			if (e.target === this.$input_area.get(0)) {
@@ -61,8 +63,12 @@ frappe.ui.form.ControlTableMultiSelect = frappe.ui.form.ControlLink.extend({
 				});
 			}
 		}
-
+		this._rows_list = this.rows.map(row => row[link_field.fieldname]);
 		return this.rows;
+	},
+	get_model_value() {
+		let value = this._super();
+		return value ? value.filter(d => !d.__islocal) : value;
 	},
 	validate(value) {
 		const rows = (value || []).slice();
@@ -121,12 +127,12 @@ frappe.ui.form.ControlTableMultiSelect = frappe.ui.form.ControlLink.extend({
 	},
 	get_pill_html(value) {
 		const encoded_value = encodeURIComponent(value);
-		return `<div class="btn-group tb-selected-value" data-value="${encoded_value}">
-			<button class="btn btn-default btn-xs btn-link-to-form">${__(value)}</button>
-			<button class="btn btn-default btn-xs btn-remove">
-				<i class="fa fa-remove text-muted"></i>
+		return `
+			<button class="data-pill btn tb-selected-value" data-value="${encoded_value}">
+				<span class="btn-link-to-form">${__(value)}</span>
+				<span class="btn-remove">${frappe.utils.icon('close')}</span>
 			</button>
-		</div>`;
+		`;
 	},
 	get_options() {
 		return (this.get_link_field() || {}).options;
@@ -141,4 +147,15 @@ frappe.ui.form.ControlTableMultiSelect = frappe.ui.form.ControlLink.extend({
 		}
 		return this._link_field;
 	},
+	custom_awesomplete_filter: function(awesomplete) {
+		let me = this;
+
+		awesomplete.filter = function(item) {
+			if (in_list(me._rows_list, item.value)) {
+				return false;
+			}
+
+			return true;
+		};
+	}
 });

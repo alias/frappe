@@ -9,6 +9,9 @@ def create_if_not_exists(doc):
 	:param doc: dict of field value pairs. can be a list of dict for multiple records.
 	'''
 
+	if not frappe.local.dev_server:
+		frappe.throw('This method can only be accessed in development', frappe.PermissionError)
+
 	doc = frappe.parse_json(doc)
 
 	if not isinstance(doc, list):
@@ -38,12 +41,12 @@ def create_todo_records():
 
 	frappe.get_doc({
 		"doctype": "ToDo",
-		"date": add_to_date(now(), days=3),
+		"date": add_to_date(now(), days=7),
 		"description": "this is first todo"
 	}).insert()
 	frappe.get_doc({
 		"doctype": "ToDo",
-		"date": add_to_date(now(), days=-3),
+		"date": add_to_date(now(), days=-7),
 		"description": "this is second todo"
 	}).insert()
 	frappe.get_doc({
@@ -74,6 +77,41 @@ def create_contact_phone_nos_records():
 	for index in range(1000):
 		doc.append('phone_nos', {'phone': '123456{}'.format(index)})
 	doc.insert()
+
+@frappe.whitelist()
+def create_doctype(name, fields):
+	fields = frappe.parse_json(fields)
+	if frappe.db.exists('DocType', name):
+		return
+	frappe.get_doc({
+		"doctype": "DocType",
+		"module": "Core",
+		"custom": 1,
+		"fields": fields,
+		"permissions": [{
+			"role": "System Manager",
+			"read": 1
+		}],
+		"name": name
+	}).insert()
+
+@frappe.whitelist()
+def create_child_doctype(name, fields):
+	fields = frappe.parse_json(fields)
+	if frappe.db.exists('DocType', name):
+		return
+	frappe.get_doc({
+		"doctype": "DocType",
+		"module": "Core",
+		"istable": 1,
+		"custom": 1,
+		"fields": fields,
+		"permissions": [{
+			"role": "System Manager",
+			"read": 1
+		}],
+		"name": name
+	}).insert()
 
 @frappe.whitelist()
 def create_contact_records():

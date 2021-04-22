@@ -36,6 +36,9 @@ def main(app=None, module=None, doctype=None, verbose=False, tests=(),
 		with open(frappe.get_app_path(app, doctype_list_path), 'r') as f:
 			doctype = f.read().strip().splitlines()
 
+	if ui_tests:
+		print("Selenium testing has been deprecated\nUse bench --site {site_name} run-ui-tests for Cypress tests")
+
 	xmloutput_fh = None
 	if junit_xml_output:
 		xmloutput_fh = open(junit_xml_output, 'wb')
@@ -71,7 +74,7 @@ def main(app=None, module=None, doctype=None, verbose=False, tests=(),
 		else:
 			ret = run_all_tests(app, verbose, profile, ui_tests, failfast=failfast, junit_xml_output=junit_xml_output)
 
-		frappe.db.commit()
+		if frappe.db: frappe.db.commit()
 
 		# workaround! since there is no separate test db
 		frappe.clear_cache()
@@ -114,13 +117,16 @@ def run_all_tests(app=None, verbose=False, profile=False, ui_tests=False, failfa
 	test_suite = unittest.TestSuite()
 	for app in apps:
 		for path, folders, files in os.walk(frappe.get_pymodule_path(app)):
-			for dontwalk in ('locals', '.git', 'public'):
+			for dontwalk in ('locals', '.git', 'public', '__pycache__'):
 				if dontwalk in folders:
 					folders.remove(dontwalk)
 
+			# for predictability
+			folders.sort()
+			files.sort()
+
 			# print path
 			for filename in files:
-				filename = cstr(filename)
 				if filename.startswith("test_") and filename.endswith(".py")\
 					and filename != 'test_runner.py':
 					# print filename[:-3]
@@ -175,22 +181,9 @@ def run_tests_for_module(module, verbose=False, tests=(), profile=False, junit_x
 
 	return _run_unittest(module, verbose=verbose, tests=tests, profile=profile, junit_xml_output=junit_xml_output)
 
-def run_setup_wizard_ui_test(app=None, verbose=False, profile=False):
-	'''Run setup wizard UI test using test_test_runner'''
-	frappe.flags.run_setup_wizard_ui_test = 1
-	return run_ui_tests(app=app, test=None, verbose=verbose, profile=profile)
+def _run_unittest(modules, verbose=False, tests=(), profile=False, junit_xml_output=False):
+	frappe.db.begin()
 
-def run_ui_tests(app=None, test=None, test_list=None, verbose=False, profile=False):
-	'''Run a single unit test for UI using test_test_runner'''
-	module = importlib.import_module('frappe.tests.ui.test_test_runner')
-	frappe.flags.ui_test_app = app
-	if test_list:
-		frappe.flags.ui_test_list = test_list
-	else:
-		frappe.flags.ui_test_path = test
-	return _run_unittest(module, verbose=verbose, tests=(), profile=profile)
-
-def _run_unittest(modules, verbose=False, tests=(), profile=False, junit_xml_output=None):
 	test_suite = unittest.TestSuite()
 
 	if not isinstance(modules, (list, tuple)):

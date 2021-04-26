@@ -279,6 +279,12 @@ frappe.Application = class Application {
 			frappe.modules[page.module] = page;
 			frappe.workspaces[frappe.router.slug(page.name)] = page;
 		}
+		if (!frappe.workspaces['home']) {
+			// default workspace is settings for Frappe
+			frappe.workspaces['home'] =
+				frappe.workspaces['pcg-web'] ? frappe.workspaces['pcg-web'] : frappe.workspaces['build'];
+				// hack; I could not figure out HOW it should work
+		}
 	}
 
 	load_user_permissions() {

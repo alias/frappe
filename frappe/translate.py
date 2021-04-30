@@ -695,21 +695,40 @@ def write_csv_file(path, app_messages, lang_dict):
 	from csv import writer
 	with open(path, 'w', newline='') as msgfile:
 		w = writer(msgfile, lineterminator='\n')
-		for a in app_messages:
-			if len(a) == 2:
-			  p, m = a
+#   <<<<<<< HEAD
+#   		for a in app_messages:
+#   			if len(a) == 2:
+#   			  p, m = a
+#   			else:
+#   			  p, m, k, s = a
+#   			key = p + ":" + m if p else m
+#   			t = lang_dict.get(key, '') # already translated shoud be found under key
+#   			if t is "":
+#   				# newly translated should be found just by the message
+#   				# because update_translations just `update`s the translation dict with messages
+#   				# without prefixing the type
+#   				t = lang_dict.get(m, '')
+#   			# strip whitespaces
+#   			t = re.sub('{\s?([0-9]+)\s?}', "{\g<1>}", t)
+#   			w.writerow([m, t])
+#   =======
+		for app_message in app_messages:
+			context = None
+			if len(app_message) == 2:
+				path, message = app_message
+			elif len(app_message) == 3:
+				path, message, lineno = app_message
+			elif len(app_message) == 4:
+				path, message, context, lineno = app_message
 			else:
-			  p, m, k, s = a
-			key = p + ":" + m if p else m
-			t = lang_dict.get(key, '') # already translated shoud be found under key
-			if t is "":
-				# newly translated should be found just by the message
-				# because update_translations just `update`s the translation dict with messages
-				# without prefixing the type
-				t = lang_dict.get(m, '')
+				continue
+
+			t = lang_dict.get(message, '')
 			# strip whitespaces
-			t = re.sub('{\s?([0-9]+)\s?}', "{\g<1>}", t)
-			w.writerow([m, t])
+			translated_string = re.sub('{\s?([0-9]+)\s?}', "{\g<1>}", t)
+			if translated_string:
+				w.writerow([message, translated_string, context])
+# >>>>>>> 42868e3ec64aecf541fc16506cb4e90f97e07f44
 
 def get_untranslated(lang, untranslated_file, app, get_all=False):
 	"""Returns all untranslated strings for a language and writes in a file

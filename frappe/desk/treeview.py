@@ -49,16 +49,26 @@ def _get_children(doctype, parent="", ignore_permissions=False, include_disabled
 	meta = frappe.get_meta(doctype)
 	parent_field = meta.get("nsm_parent_field") or "parent_" + frappe.scrub(doctype)
 
+	# Add custom fields from controller if available
+	select_fields = []
+	ctrl = frappe.model.document.get_controller(doctype)
+	if hasattr(ctrl, "get_tree_fields"):
+		custom_fields = ctrl.get_tree_fields()
+		select_fields.extend([Field(f).as_(f) for f in custom_fields])
+	
+
 	qb = (
 		frappe.qb.from_(doctype)
 		.select(
 			Field("name").as_("value"),
 			Field(meta.get("title_field") or "name").as_("title"),
 			Field("is_group").as_("expandable"),
+			*select_fields,
 		)
 		.where(functions.IfNull(Field(parent_field), "").eq(parent))
 		.where(Field("docstatus") < 2)
 	)
+	return result
 
 	if frappe.db.has_column(doctype, "disabled") and not include_disabled:
 		# used 0 instead of `false` since type of check in postgres is smallint

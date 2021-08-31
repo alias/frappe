@@ -1208,6 +1208,8 @@ Object.assign(frappe.utils, {
 	},
 
 	icon(icon_name, size = "sm", icon_class = "", icon_style = "", svg_class = "") {
+		let know_svg_symbols = $(".d-block").find("symbol").map( (a,f) => f.id.replace("icon-", "")).toArray()
+
 		let size_class = "";
 
 		if (typeof size == "object") {
@@ -1215,9 +1217,18 @@ Object.assign(frappe.utils, {
 		} else {
 			size_class = `icon-${size}`;
 		}
-		return `<svg class="icon ${svg_class} ${size_class}" style="${icon_style}">
-			<use class="${icon_class}" href="#icon-${icon_name}"></use>
-		</svg>`;
+		// return `<svg class="icon ${svg_class} ${size_class}" style="${icon_style}">
+		// 	<use class="${icon_class}" href="#icon-${icon_name}"></use>
+		// </svg>`;
+		if (know_svg_symbols.includes(icon_name)){
+			return  `<svg class="icon ${svg_class} ${size_class}" style="${icon_style}">
+				<use class="${icon_class}" href="#icon-${icon_name}"></use>
+			 </svg>`
+		} else {
+			let size_class = size_class ? "fa-" + size_class.replace("icon-", "") : "" ;
+			return `<i class="icon-fa fa ${size_class} fa-${icon_name}" aria-hidden="true"></i>`
+		}
+
 	},
 
 	flag(country_code) {

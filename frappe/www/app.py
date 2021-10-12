@@ -47,9 +47,10 @@ def get_context(context):
 	include_css = hooks.get("app_include_css", []) + frappe.conf.get("app_include_css", [])
 	
 	svg_string = ""
-	for include_path in hooks["app_include_svg"]:
-		with open(include_path) as file:
-			svg_string += file.read()
+	if "app_include_svg" in hooks:
+		for include_path in hooks["app_include_svg"]:
+			with open(include_path) as file:
+				svg_string += file.read()
 
 	context.update(
 		{

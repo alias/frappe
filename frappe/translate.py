@@ -302,6 +302,8 @@ def get_translations_from_apps(lang, apps=None):
 	For derivative languages (es-GT), take translations from the
 	base language (es) and then update translations from the child (es-GT)"""
 
+	if lang=='en' and not getattr(frappe.local, "initialised", None):
+		return {}
 
 	translations = {}
 	for app in apps or frappe.get_installed_apps(_ensure_on_bench=True):

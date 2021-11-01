@@ -1961,6 +1961,57 @@ frappe.ui.form.Form = class FrappeForm {
 		return true;
 	}
 
+	show_tour(on_finish) {
+		let that = this;
+		const tour_info = frappe.tour[this.doctype];
+
+		if (!Array.isArray(tour_info)) {
+			return;
+		}
+
+		const driver = new frappe.Driver({
+			className: 'frappe-driver',
+			allowClose: false,
+			padding: 10,
+			overlayClickNext: true,
+			keyboardControl: true,
+			nextBtnText: 'Next',
+			prevBtnText: 'Previous',
+			opacity: 0.25
+		});
+
+		this.layout.sections.forEach(section => section.collapse(false));
+
+		let steps = tour_info.map(step => {
+			if(typeof(step.custom_driver) !== "undefined"){
+				return step.custom_driver(that, driver, on_finish);
+			}
+			let field = this.get_docfield(step.fieldname);
+			return {
+				element: `.frappe-control[data-fieldname='${step.fieldname}']`,
+				popover: {
+					title: step.title || field.label,
+					description: step.description,
+					position: step.position || 'bottom'
+				},
+				onNext: () => {
+					const next_condition_satisfied = this.layout.evaluate_depends_on_value(step.next_step_condition || true);
+					if (!next_condition_satisfied) {
+						driver.preventMove();
+					}
+
+					if (!driver.hasNextStep()) {
+						on_finish && on_finish();
+					}
+				}
+			};
+		});
+
+		driver.defineSteps(steps);
+		frappe.router.on('change', () => driver.reset());
+		driver.start();
+	}
+
 	setup_docinfo_change_listener() {
 		let doctype = this.doctype;
 		let docname = this.docname;

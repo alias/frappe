@@ -421,6 +421,7 @@ export default class OnboardingWidget extends Widget {
 					});
 					this.mark_complete(step);
 				}
+
 			},
 			null,
 			null,
@@ -440,6 +441,9 @@ export default class OnboardingWidget extends Widget {
 			step.is_complete = true;
 			$step.removeClass("skipped");
 			$step.addClass("complete");
+
+			frappe.desk_page.onboarding_widget.body.empty();
+			frappe.desk_page.onboarding_widget.refresh();
 		};
 
 		this.update_step_status(step, "is_complete", 1, callback);

@@ -116,7 +116,12 @@ export default class OnboardingWidget extends Widget {
 					)}</button>`
 				)
 					.appendTo(this.step_footer)
-					.on("click", () => actions[step.action](step));
+					.on("click", () => {
+						if(typeof(frappe.onboading_step_setup) !== "undefined" && typeof(frappe.onboading_step_setup[step.name]) === "function"){
+							frappe.onboading_step_setup[step.name](step);
+						}
+						return actions[step.action](step);
+					});
 			}
 		};
 
@@ -263,7 +268,6 @@ export default class OnboardingWidget extends Widget {
 			const tour_name = step.form_tour;
 			frm.tour.init({ tour_name, on_finish }).then(() => frm.tour.start());
 		};
-
 		frappe.set_route(route);
 	}
 

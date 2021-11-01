@@ -217,7 +217,7 @@ class DocType(Document):
 		self.validate_virtual_doctype_methods()
 		self.ensure_minimum_max_attachment_limit()
 		self.patch_old_naming_expressions()
-		validate_links_table_fieldnames(self)
+		validate_fields_for_doctype(self.doctype)
 
 		if not self.is_new():
 			self.before_update = frappe.get_doc("DocType", self.name)

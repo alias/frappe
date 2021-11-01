@@ -32,8 +32,8 @@ export default class OnboardingWidget extends Widget {
 		this.steps.forEach((step, index) => {
 			this.add_step(step, index);
 		});
-
-		this.show_step(this.steps[0]);
+		let active_step = this.steps.find(step => step.is_complete === 0);
+		this.show_step(active_step || this.steps[0]);
 	}
 
 	add_step(step, index) {
@@ -110,7 +110,12 @@ export default class OnboardingWidget extends Widget {
 					)}</button>`
 				)
 					.appendTo(this.step_footer)
-					.on("click", () => actions[step.action](step));
+					.on("click", () => {
+						if(typeof(frappe.onboading_step_setup) !== "undefined" && typeof(frappe.onboading_step_setup[step.name]) === "function"){
+							frappe.onboading_step_setup[step.name](step);
+						}
+						return actions[step.action](step);
+					});
 			}
 		};
 
@@ -257,7 +262,6 @@ export default class OnboardingWidget extends Widget {
 			const tour_name = step.form_tour;
 			frm.tour.init({ tour_name, on_finish }).then(() => frm.tour.start());
 		};
-
 		frappe.set_route(route);
 	}
 

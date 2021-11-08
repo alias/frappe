@@ -284,6 +284,40 @@ class Workspace(DeskViews):
 		return items
 
 	@handle_not_exist
+	def get_onboardings(self):
+		if self.onboarding_list:
+			for onboarding in self.onboarding_list:
+				onboarding_doc = self.get_onboarding_doc(onboarding)
+				if onboarding_doc:
+					item = {
+						"label": _(onboarding),
+						"title": _(onboarding_doc.title),
+						"subtitle": _(onboarding_doc.subtitle),
+						"success": _(onboarding_doc.success_message),
+						"docs_url": onboarding_doc.documentation_url,
+						"items": self.get_onboarding_steps(onboarding_doc),
+					}
+					self.onboardings.append(item)
+		return self.onboardings
+
+	@handle_not_exist
+	def get_onboarding_steps(self, onboarding_doc):
+		steps = []
+		for doc in onboarding_doc.get_steps():
+			step = doc.as_dict().copy()
+			step.label = _(doc.title)
+			step.action_label = _(doc.action_label)
+			print(f"translating '{doc.description}' __to__ '{_(doc.description)}'")
+			step.description = _(doc.description)
+			if step.action == "Create Entry":
+				step.is_submittable = frappe.db.get_value(
+					"DocType", step.reference_document, "is_submittable", cache=True
+				)
+			steps.append(step)
+
+		return steps
+
+	@handle_not_exist
 	def get_number_cards(self):
 		all_number_cards = []
 		if frappe.has_permission("Number Card", throw=False):

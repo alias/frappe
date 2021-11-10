@@ -1998,14 +1998,13 @@ frappe.ui.form.Form = class FrappeForm {
 		});
 
 		this.layout.sections.forEach(section => section.collapse(false));
-
 		let steps = tour_info.map(step => {
 			if(typeof(step.custom_driver) !== "undefined"){
 				return step.custom_driver(that, driver, on_finish);
 			}
 			let field = this.get_docfield(step.fieldname);
 			return {
-				element: `.frappe-control[data-fieldname='${step.fieldname}']`,
+				element: `[data-page-route='${this.doctype}'] .frappe-control[data-fieldname='${step.fieldname}']`,
 				popover: {
 					title: step.title || field.label,
 					description: step.description,
@@ -2023,7 +2022,6 @@ frappe.ui.form.Form = class FrappeForm {
 				}
 			};
 		});
-
 		driver.defineSteps(steps);
 		frappe.router.on('change', () => driver.reset());
 		driver.start();

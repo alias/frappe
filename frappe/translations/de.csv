@@ -4997,3 +4997,9 @@ Top,oben,
 Prepend the template to the email message,Vorlage oberhalb der Email-Nachricht einfügen,
 Clear & Add Template,Leeren und Vorlage einfügen,
 Clear the email message and add the template,Email-Feld leeren und Vorlage einfügen,
+
+
+FrmTour_Next, Weiter
+FrmTour_Previous, Zurück
+FrmTour_Close, Beenden
+FrmTour_Done, Fertig

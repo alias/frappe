@@ -1959,8 +1959,10 @@ frappe.ui.form.Form = class FrappeForm {
 			padding: 10,
 			overlayClickNext: true,
 			keyboardControl: true,
-			nextBtnText: 'Next',
-			prevBtnText: 'Previous',
+			nextBtnText: __('FrmTour_Next'),
+			prevBtnText: __('FrmTour_Previous'),
+			closeBtnText: __('FrmTour_Close'),
+			doneBtnText: __('FrmTour_Done'),
 			opacity: 0.25
 		});
 

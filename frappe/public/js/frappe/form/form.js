@@ -799,7 +799,7 @@ frappe.ui.form.Form = class FrappeForm {
 		}
 	}
 
-	save(save_action, callback, btn, on_error) {
+	save(save_action, callback, btn, on_error, rethrow) {
 		let me = this;
 		return new Promise((resolve, reject) => {
 			btn && $(btn).prop("disabled", true);
@@ -810,7 +810,10 @@ frappe.ui.form.Form = class FrappeForm {
 				me.show_success_action();
 			})
 			.catch((e) => {
-				console.error(e);
+				console.error(e); // eslint-disable-line
+				if (rethrow){
+					throw e;
+				}
 			});
 	}
 

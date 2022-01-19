@@ -809,7 +809,9 @@ frappe.ui.form.Form = class FrappeForm {
 				me.show_success_action();
 			})
 			.catch((e) => {
-				console.error(e);
+				console.error(e); // eslint-disable-line
+				throw e;
+
 			});
 	}
 
@@ -2123,7 +2125,6 @@ frappe.ui.form.Form = class FrappeForm {
 		} else {
 			tour_info = frappe.tour[this.doctype];
 		}
-
 
 		if (!Array.isArray(tour_info)) {
 			return;

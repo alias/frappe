@@ -1193,7 +1193,8 @@ def _test_connection_query(doctype, field, idx):
 		frappe.clear_last_message()
 		msg = _("Document Links Row #{0}: Invalid doctype or fieldname.").format(idx)
 		msg += "<br>" + str(e)
-		frappe.throw(msg, InvalidFieldNameError)
+		# frappe.throw(msg, InvalidFieldNameError)
+		frappe.msgprint(msg)
 
 
 def validate_fields_for_doctype(doctype):

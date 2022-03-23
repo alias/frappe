@@ -382,7 +382,6 @@ from {tables}
 		"""
 		blacklisted_keywords = ["select", "create", "insert", "delete", "drop", "update", "case", "show"]
 		blacklisted_functions = [
-			"concat",
 			"concat_ws",
 			"if",
 			"ifnull",

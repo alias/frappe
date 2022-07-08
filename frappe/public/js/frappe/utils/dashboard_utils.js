@@ -24,6 +24,7 @@ frappe.dashboard_utils = {
 
 			if (filter.fieldnames) {
 				options_html = filter.options.map((option, i) =>
+					// TODO: Make option translatable - be careful, since the text of the a tag is later used to perform some action
 					`<li>
 						<a class="dropdown-item" data-fieldname="${filter.fieldnames[i]}" data-option-value="${option}>${__(option)}</a>
 					</li>`).join('');

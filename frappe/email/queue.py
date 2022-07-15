@@ -628,7 +628,7 @@ def send_one(email, smtpserver=None, auto_commit=True, now=False):
 
 		else:
 			# log to Error Log
-			frappe.log_error("frappe.email.queue.flush")
+			frappe.log_error(f"frappe.email.queue.flush\n{e}")
 
 
 def prepare_message(email, recipient, recipients_list):

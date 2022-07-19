@@ -377,7 +377,7 @@ frappe.router = {
 		return new Promise((resolve) => {
 			route = this.get_route_from_arguments(route);
 			route = this.convert_from_standard_route(route);
-			let sub_path = this.make_url(route);
+			let sub_path = route[route.length -1] === "literally" ? route[0] : this.make_url(route);
 			sub_path += frappe.route_hash || "";
 			frappe.route_hash = null;
 			if (frappe.open_in_new_tab) {

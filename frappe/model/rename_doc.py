@@ -102,6 +102,7 @@ def update_document_title(
 		else:
 			try:
 				setattr(doc, title_field, updated_title)
+				doc.run_method("after_document_title_update")
 				doc.save()
 				frappe.msgprint(_("Saved"), alert=True, indicator="green")
 			except Exception as e:

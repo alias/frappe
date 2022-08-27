@@ -38,6 +38,8 @@ def update_document_title(
 	if title_updated:
 		try:
 			frappe.db.set_value(doctype, docname, title_field, new_title)
+			new_dt = frappe.get_doc(doctype, docname)
+			new_dt.run_method("after_document_title_update")
 			frappe.msgprint(_("Saved"), alert=True, indicator="green")
 		except Exception as e:
 			if frappe.db.is_duplicate_entry(e):

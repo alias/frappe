@@ -30,7 +30,7 @@ frappe.views.Workspace = class Workspace {
 			public: {},
 			private: {},
 		};
-		this.sidebar_categories = ["My Workspaces", "Public"];
+		this.sidebar_categories = ["My Workspaces", "PCG Live", "Public"];
 
 		this.prepare_container();
 		this.setup_pages();
@@ -121,7 +121,11 @@ frappe.views.Workspace = class Workspace {
 					(page) => page.parent_page == "" || page.parent_page == null
 				);
 			}
-			root_pages = root_pages.uniqBy((d) => d.title);
+			if (category === "PCG Live") {
+				root_pages = this.public_pages.filter((page) => ["PCG Live", "PCG Web"].includes(page.parent_page))
+			} else{
+				root_pages = root_pages.uniqBy((d) => d.title);
+			}
 			this.build_sidebar_section(category, root_pages);
 		});
 

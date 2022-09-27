@@ -1208,12 +1208,18 @@ Object.assign(frappe.utils, {
 	icon(icon_name, size = "sm", icon_class = "", icon_style = "", svg_class = "") {
 		let size_class = "";
 		let is_espresso = icon_name.startsWith("es-");
+		let is_fa = icon_name.startsWith("fa-");
+		let original_iconname = icon_name;
 
 		icon_name = is_espresso ? `${"#" + icon_name}` : `${"#icon-" + icon_name}`;
 		if (typeof size == "object") {
 			icon_style += ` width: ${size.width}; height: ${size.height}`;
 		} else {
 			size_class = `icon-${size}`;
+		}
+		if (is_fa){
+			size_class = size_class ? "fa-" + size_class.replace("icon-", "") : "" ;
+			return `<i class="icon-fa fa ${size_class} ${original_iconname}" aria-hidden="true"></i>`;
 		}
 		return `<svg class="${
 			is_espresso

@@ -321,6 +321,7 @@ frappe.ui.form.Dashboard = class FormDashboard {
 				this.chart_widgets_area.collapse();
 
 			});
+		}
 
 		if (show) {
 			this.show();

@@ -14,7 +14,7 @@ from frappe.config import get_modules_from_all_apps_for_user
 from frappe.model.document import Document
 from frappe.model.naming import append_number_if_name_exists
 from frappe.modules.export_file import export_to_files
-from frappe.utils import cint, get_datetime, getdate, now_datetime, nowdate
+from frappe.utils import cint, get_datetime, getdate, has_common, now_datetime, nowdate
 from frappe.utils.dashboard import cache_source
 from frappe.utils.data import format_date
 from frappe.utils.dateutils import (
@@ -88,6 +88,11 @@ def has_permission(doc, ptype, user):
 	else:
 		allowed_doctypes = frappe.permissions.get_doctypes_with_read()
 		if doc.document_type in allowed_doctypes:
+			return True
+
+	if doc.roles:
+		allowed = [d.role for d in doc.roles]
+		if has_common(roles, allowed):
 			return True
 
 	return False
@@ -213,14 +218,13 @@ def get_chart_config(chart, filters, timespan, timegrain, from_date, to_date):
 		group_by="_unit",
 		order_by="_unit asc",
 		as_list=True,
-		ignore_ifnull=True,
 	)
 
 	result = get_result(data, timegrain, from_date, to_date, chart.chart_type)
 
 	return {
 		"labels": [
-			format_date(get_period(r[0], timegrain))
+			format_date(get_period(r[0], timegrain), parse_day_first=True)
 			if timegrain in ("Daily", "Weekly")
 			else get_period(r[0], timegrain)
 			for r in result
@@ -292,13 +296,6 @@ def get_group_by_chart_config(chart, filters):
 	)
 
 	if data:
-		if chart.number_of_groups and chart.number_of_groups < len(data):
-			other_count = 0
-			for i in range(chart.number_of_groups - 1, len(data)):
-				other_count += data[i]["count"]
-			data = data[0 : chart.number_of_groups - 1]
-			data.append({"name": "Other", "count": other_count})
-
 		chart_config = {
 			"labels": [item["name"] if item["name"] else "Not Specified" for item in data],
 			"datasets": [{"name": chart.name, "values": [item["count"] for item in data]}],

@@ -49,7 +49,6 @@ frappe.socketio = {
 					data.description,
 					true,
 				);
-
 			}
 		});
 

@@ -211,7 +211,7 @@ def encrypt(txt, encryption_key=None):
 	return cipher_text
 
 
-def decrypt(txt, encryption_key=None):
+def decrypt(txt, encryption_key=None, only_raise=False):
 	# Only use encryption_key value generated with Fernet.generate_key().decode()
 
 	try:
@@ -219,13 +219,12 @@ def decrypt(txt, encryption_key=None):
 		return cstr(cipher_suite.decrypt(encode(txt)))
 	except InvalidToken:
 		# encryption_key in site_config is changed and not valid
-		frappe.throw(
-			_("Encryption key is invalid! Please check site_config.json")
-			+ "<br>"
-			+ _(
-				"If you have recently restored the site you may need to copy the site config contaning original Encryption Key."
-			)
-		)
+		error_msg = _("Encryption key is invalid! Please check site_config.json") 
+		+ "<br>"
+		+ _("If you have recently restored the site you may need to copy the site config contaning original Encryption Key.")
+		if only_raise:
+			raise frappe.exceptions.ValidationError(error_msg)
+		frappe.throw(error_msg)
 
 
 def get_encryption_key():

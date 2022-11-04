@@ -36,7 +36,7 @@ def read_csv_content_from_attached_file(doc):
 		)
 
 
-def read_csv_content(fcontent):
+def read_csv_content(fcontent, delimiter=","):
 	if not isinstance(fcontent, str):
 		decoded = False
 		for encoding in ["utf-8", "windows-1250", "windows-1252"]:
@@ -57,7 +57,7 @@ def read_csv_content(fcontent):
 
 	try:
 		rows = []
-		for row in csv.reader(content):
+		for row in csv.reader(content, delimiter=delimiter):
 			r = []
 			for val in row:
 				# decode everything

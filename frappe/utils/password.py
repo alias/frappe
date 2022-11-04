@@ -209,13 +209,15 @@ def encrypt(pwd):
 	return cipher_text
 
 
-def decrypt(pwd):
+def decrypt(pwd, only_raise=False):
 	try:
 		cipher_suite = Fernet(encode(get_encryption_key()))
 		plain_text = cstr(cipher_suite.decrypt(encode(pwd)))
 		return plain_text
 	except InvalidToken:
 		# encryption_key in site_config is changed and not valid
+		if only_raise:
+			raise frappe.exceptions.ValidationError(_("Encryption key is invalid, Please check site_config.json"))
 		frappe.throw(_("Encryption key is invalid, Please check site_config.json"))
 
 

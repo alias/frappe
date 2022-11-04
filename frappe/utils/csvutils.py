@@ -40,7 +40,7 @@ def read_csv_content_from_attached_file(doc):
 		)
 
 
-def read_csv_content(fcontent, ignore_encoding=False):
+def read_csv_content(fcontent, ignore_encoding=False, delimiter=","):
 	rows = []
 
 	if not isinstance(fcontent, text_type):
@@ -68,7 +68,7 @@ def read_csv_content(fcontent, ignore_encoding=False):
 
 	try:
 		rows = []
-		for row in csv.reader(content):
+		for row in csv.reader(content, delimiter=delimiter):
 			r = []
 			for val in row:
 				# decode everything

@@ -186,7 +186,7 @@ def encrypt(txt, encryption_key=None):
 	return cstr(cipher_suite.encrypt(encode(txt)))
 
 
-def decrypt(txt, encryption_key=None, key: str | None = None):
+def decrypt(txt, encryption_key=None, key: str | None = None, only_raise=False):
 	# Only use encryption_key value generated with Fernet.generate_key().decode()
 
 	try:
@@ -194,18 +194,12 @@ def decrypt(txt, encryption_key=None, key: str | None = None):
 		return cstr(cipher_suite.decrypt(encode(txt)))
 	except InvalidToken:
 		# encryption_key in site_config is changed and not valid
-		frappe.throw(
-			(_("Failed to decrypt key {0}").format(key) + "<br><br>" if key else "")
-			+ _("Encryption key is invalid! Please check site_config.json")
-			+ "<br><br>"
-			+ _(
-				"If you have recently restored the site you may need to copy the site config contaning original Encryption Key."
-			)
-			+ "<br><br>"
-			+ _(
-				"Please visit https://frappecloud.com/docs/sites/migrate-an-existing-site#encryption-key for more information."
-			),
-		)
+		error_msg = _("Encryption key is invalid! Please check site_config.json") 
+		+ "<br>"
+		+ _("If you have recently restored the site you may need to copy the site config contaning original Encryption Key.")
+		if only_raise:
+			raise frappe.exceptions.ValidationError(error_msg)
+		frappe.throw(error_msg)
 
 
 def get_encryption_key():

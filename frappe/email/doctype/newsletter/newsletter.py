@@ -225,7 +225,7 @@ class Newsletter(WebsiteGenerator):
 			unsubscribe_params={"name": self.name},
 			reference_doctype=self.doctype,
 			reference_name=self.name,
-			queue_separately=True,
+			queue_separately=False,   # hotfix bob, frappe seriemmail geht sonst nicht raus
 			send_priority=0,
 			args=args,
 			email_read_tracker_url=None

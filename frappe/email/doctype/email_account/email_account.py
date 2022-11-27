@@ -312,7 +312,7 @@ class EmailAccount(Document):
 	@classmethod
 	@raise_error_on_no_output(
 		keep_quiet=lambda: not cint(frappe.get_system_settings("setup_complete")),
-		error_message=_("Please setup default Email Account from Setup > Email > Email Account"),
+		error_message="Please setup default Email Account from Setup > Email > Email Account",
 		error_type=frappe.OutgoingEmailError,
 	)  # noqa
 	@cache_email_account("outgoing_email_account")

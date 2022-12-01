@@ -5,6 +5,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Literal, Optional
 
+from frappe.pcg_utils.occurance_checker import occurance_checker
+
+
 import frappe
 
 if TYPE_CHECKING:
@@ -189,6 +192,11 @@ def sendmail(
 
 	from frappe.utils.jinja import get_email_from_template
 
+
+	context = f'{subject}{sender}{recipients}'
+	if occurance_checker('send mail', context=context, attempt_treshhold=2, expires_in_sec=60*30):
+		return
+	
 	if recipients is None:
 		recipients = []
 	if cc is None:

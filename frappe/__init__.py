@@ -739,7 +739,7 @@ def sendmail(
 	"""
 
 	context = f'{subject}{sender}{recipients}'
-	if occurance_checker('send mail', context=context, attempt_treshhold=9, expires_in_sec=60*30):
+	if occurance_checker('send mail', context=context, attempt_treshhold=2, expires_in_sec=60*30):
 		return
 	
 	if recipients is None:

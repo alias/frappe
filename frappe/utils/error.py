@@ -250,7 +250,7 @@ def raise_error_on_no_output(error_message, error_type=None, keep_quiet=None):
 			raise_error = kwargs.get("_raise_error") if "_raise_error" in kwargs else default_raise_error
 
 			if (not response) and raise_error:
-				frappe.throw(error_message, error_type or Exception)
+				frappe.throw(frappe._(error_message), error_type or Exception)
 			return response
 
 		return wrapper_raise_error_on_no_output

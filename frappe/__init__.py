@@ -27,6 +27,7 @@ from collections.abc import Callable
 from typing import TYPE_CHECKING, Any, Literal, Optional, TypeAlias, overload
 
 import click
+from frappe.pcg_utils.occurance_checker import occurance_checker
 from werkzeug.local import Local, release_local
 
 import frappe
@@ -733,6 +734,10 @@ def sendmail(
 	:param with_container: Wraps email inside a styled container
 	"""
 
+	context = f'{subject}{sender}{recipients}'
+	if occurance_checker('send mail', context=context, attempt_treshhold=2, expires_in_sec=60*30):
+		return
+	
 	if recipients is None:
 		recipients = []
 	if cc is None:

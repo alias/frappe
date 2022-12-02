@@ -26,6 +26,8 @@ class Monitor:
 
         self.PREFIX = "pcg." + socket.gethostname() + "." + basepath + "."
 
+        self.DEVELOPER_MODE = frappe.conf.developer_mode == 1 or "localhost" in self.PREFIX
+
         if basename is not None:
             self.PREFIX = basename + "."
         if server is not None:
@@ -36,10 +38,10 @@ class Monitor:
     def __send_internal(self, core_msg):        
         #DT = round(time.time())                       # dt is only meaningful when sending delayed and using 2003
         #msg = self.PREFIX + core_msg + " " + str(DT)        
-        msg = self.PREFIX + core_msg 
-        if "localhost" in self.PREFIX:                 # avoid flooding the monitor database with test systems
+        msg = self.PREFIX + core_msg
+        if self.DEVELOPER_MODE:                 # avoid flooding the monitor database with test systems
             msg = "No monitoring for site localhost: " + msg
-            if not occurance_checker(msg):
+            if not occurance_checker(f"No monitoring for site localhost: {self.PREFIX}", expires_in_sec=60*30):
                 print(msg)
             return
         

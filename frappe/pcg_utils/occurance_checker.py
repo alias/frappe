@@ -20,7 +20,6 @@ def occurance_checker(title:str, context: str = None, attempt_treshhold = 10, ex
 
     if attempts == attempt_treshhold:
         print(f'occurance_checker attempt_treshhold ({attempt_treshhold}) reached for: {title}, attempt: {attempts}')
-        monitor.send_event("cron.fetch_queue")
 
     if attempts >= attempt_treshhold:
         return True

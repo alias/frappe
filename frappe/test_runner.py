@@ -213,6 +213,7 @@ def run_tests_for_doctype(
 		make_test_records(doctype, verbose=verbose, force=force, commit=True)
 		modules.append(importlib.import_module(test_module))
 
+	frappe.db.commit()
 	return _run_unittest(
 		modules,
 		verbose=verbose,

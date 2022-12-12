@@ -40,9 +40,11 @@ class Monitor:
         #msg = self.PREFIX + core_msg + " " + str(DT)        
         msg = self.PREFIX + core_msg
         if self.DEVELOPER_MODE:                 # avoid flooding the monitor database with test systems
-            msg = "No monitoring for site localhost: " + msg
-            if not occurance_checker(f"No monitoring for site localhost: {self.PREFIX}", expires_in_sec=60*30):
-                print(msg)
+
+            # This is performance critical
+            # msg = "No monitoring for site localhost: " + msg
+            # if not occurance_checker(f"No monitoring for site localhost: {self.PREFIX}", expires_in_sec=60*30):
+            #     print(msg)
             return
         
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

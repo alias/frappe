@@ -11,12 +11,16 @@ def occurance_checker(title:str, context: str = None, attempt_treshhold = 10, ex
     if context is not None:
         key = f"{title}: {hashlib.md5((title + context).encode('utf-8')).hexdigest()}"
 
-    attempts = frappe.cache().get_value(key)
+    attempts = frappe.cache().get_value(key, expires=True)
 
     if attempts is None:
         attempts = 0
 
-    frappe.cache().set_value(key=key, val=attempts + 1, user=None, expires_in_sec=expires_in_sec, cache_locally=False)
+    # test_before_key = frappe.cache().get_value(key, expires=True)
+    new_attepts = attempts + 1
+    frappe.cache().set_value(key=key, val=new_attepts, user=None, expires_in_sec=expires_in_sec)
+    # test_after_key = frappe.cache().get_value(key, expires=True)
+    # print(f'before: {test_before_key}, after: {test_after_key}, old_attempts: {attempts}, new_attempts: {new_attepts}')
 
     if attempts == attempt_treshhold:
         print(f'occurance_checker attempt_treshhold ({attempt_treshhold}) reached for: {title}, attempt: {attempts}')

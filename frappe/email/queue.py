@@ -168,6 +168,11 @@ def flush(from_test=False):
 	except Exception:
 		queued_jobs = set()
 
+	try:
+		queued_jobs = set(get_jobs(site=frappe.local.site, key="job_name")[frappe.local.site])
+	except Exception:
+		queued_jobs = set()
+
 	for row in get_queue():
 		try:
 			job_name = f"email_queue_sendmail_{row.name}"

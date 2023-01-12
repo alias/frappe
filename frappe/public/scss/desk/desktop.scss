@@ -1061,7 +1061,6 @@ body {
 
 		.standard-sidebar-section {
 			// display: none;
-
 			&:has(> [item-is-hidden="0"]) {
 				display: block;
 			}

@@ -95,7 +95,7 @@ def get_info_based_on_role(role, field="email", ignore_permissions=False):
 		user = frappe.db.get_value("User", "Administrator", field)
 		return [user] if user else []
 
-	users = frappe.get_list(
+	users = frappe.get_all(
 		"Has Role",
 		filters={"role": role, "parenttype": "User"},
 		parent_doctype="User",

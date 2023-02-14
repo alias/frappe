@@ -395,10 +395,10 @@ frappe.views.QueryReport = class QueryReport extends frappe.views.BaseList {
 		});
 	}
 
-	refresh_report(route_options) {
+	async refresh_report(route_options) {
 		this.toggle_message(true);
 		this.toggle_report(false);
-
+		this.report_settings.before_load && await this.report_settings.before_load(this)
 		return frappe.run_serially([
 			() => this.setup_filters(),
 			() => this.set_route_filters(route_options),

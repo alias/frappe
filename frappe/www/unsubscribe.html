@@ -1,6 +1,6 @@
 {% extends "templates/web.html" %}
 
-{% block title %} Unsubscribe from Newsletter {% endblock %}
+{% block title %} {{_("Unsubscribe from Newsletter") }} {% endblock %}
 
 {% block page_content %}
 
@@ -20,17 +20,17 @@
 	<!-- Confirmation page to select the group to unsubscribe -->
 		<div class="page-card ">
 			<div class='page-card-head'>
-				<span class='indicator blue'>Unsubscribe</span>
+				<span class='indicator blue'>{{_("Unsubscribe") }}</span>
 			</div>
 			{% if email_groups %}
 				<div>
-					Select groups you wish to unsubscribe from.
+					{{_("Select groups you wish to unsubscribe from.") }}
 					<span class="text-muted">{{ email }}</span>
 				</div>
 				<!-- Show 'Select All' or 'Unselect All' buttons only if there are more than 5 groups -->
 				{% if email_groups|length > 5 %}
-				<button id="select-all-btn"class="small-btn">Select All</button>
-				<button id="unselect-all-btn"class="small-btn">Unselect All</button>
+				<button id="select-all-btn"class="small-btn">{{_("Select All") }}</button>
+				<button id="unselect-all-btn"class="small-btn">{{_("Unselect All") }}</button>
 				{% endif %}
 				<form method="post">
 					<input type="hidden" name="user_email" value="{{ email }}">
@@ -54,12 +54,12 @@
 							type="submit"
 							id="unsubscribe"
 							class="btn btn-primary">
-							Unsubscribe
+				{{_("Unsubscribe") }}
 						</button>
 				</form>
 			{% else %}
 				<div>
-					You are not registered to any mailing list.
+					{{_("You are not registered to any mailing list.") }}
 					<span class="text-muted">{{ email }}</span>
 				</div>
 			{% endif %}
@@ -71,16 +71,16 @@
 			<div class='page-card-head'>
 				<span class='indicator green'>Unsubscribed</span>
 			</div>
-			You have been unsubscribed from selected mailing list.
+		{{_("You have been unsubscribed from selected mailing list.
 		</div>
 
 	{% else %}
 	<!-- For invalid and unsigned request -->
 		<div class="page-card">
 			<div class='page-card-head'>
-				<span class='indicator red'>Unsubscribe</span>
+				<span class='indicator red'>{{_("Unsubscribe") }}</span>
 			</div>
-			<b>Invalid Request.</b>
+			<b>{{_("Invalid Request.") }}</b>
 		</div>
 	{% endif %}
 

@@ -17,7 +17,7 @@ frappe.ui.form.ControlGeolocation = class ControlGeolocation extends frappe.ui.f
 		this.map_id = frappe.dom.get_unique_id();
 		this.map_area = $(
 			`<div class="map-wrapper border">
-				<div id="${this.map_id}" style="min-height: 400px; z-index: 1; max-width:100%"></div>
+				<div id="${this.map_id}" style="min-height: 1000px; z-index: 1; max-width:100%"></div>
 			</div>`
 		);
 

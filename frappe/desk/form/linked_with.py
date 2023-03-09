@@ -423,6 +423,7 @@ def get_exempted_doctypes():
 
 
 def get_linked_docs(doctype: str, name: str, linkinfo: dict | None = None) -> dict[str, list]:
+	print(f"get_linked_docs called with {doctype, name}")
 	if isinstance(linkinfo, str):
 		# additional fields are added in linkinfo
 		linkinfo = json.loads(linkinfo)
@@ -435,8 +436,15 @@ def get_linked_docs(doctype: str, name: str, linkinfo: dict | None = None) -> di
 	is_target_doctype_table = frappe.get_meta(doctype).istable
 
 	for linked_doctype, link_context in linkinfo.items():
+		# Don't try to fetch linked documents if the user can't read the doctype
+		if not frappe.has_permission(linked_doctype):
+			continue
 		linked_doctype_meta = frappe.get_meta(linked_doctype)
-
+		if linked_doctype_meta.is_virtual:
+			# lookup in virtual tables is not impl, also not in vortual child tables - bs
+			print(f"{linked_doctype} is virtual")
+			continue
+		
 		if linked_doctype_meta.issingle:
 			continue
 
@@ -464,6 +472,9 @@ def get_linked_docs(doctype: str, name: str, linkinfo: dict | None = None) -> di
 			filters = [[linked_doctype, "name", "=", parent_info.parent]]
 
 		elif child_doctype := link_context.get("child_doctype"):
+			if frappe.get_meta(child_doctype).is_virtual:
+				continue
+
 			or_filters = [
 				[child_doctype, link_fieldnames, "=", name] for link_fieldnames in link_context["fieldname"]
 			]

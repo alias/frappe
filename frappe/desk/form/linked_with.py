@@ -438,6 +438,9 @@ def get_linked_docs(doctype: str, name: str, linkinfo: dict | None = None) -> di
 
 	for linked_doctype, link_context in linkinfo.items():
 		linked_doctype_meta = frappe.get_meta(linked_doctype)
+		# lookup in virtual tables is not implemented, nor in virtual child tables
+		if linked_doctype_meta.is_virtual:
+			continue
 
 		if linked_doctype_meta.issingle:
 			continue
@@ -466,6 +469,10 @@ def get_linked_docs(doctype: str, name: str, linkinfo: dict | None = None) -> di
 			filters = [[linked_doctype, "name", "=", parent_info.parent]]
 
 		elif child_doctype := link_context.get("child_doctype"):
+			# lookup in virtual tables is not implemented, nor in virtual child tables
+			if frappe.get_meta(child_doctype).is_virtual:
+				continue
+
 			# doctype may link through more than one child table, each with its own Link field
 			child_links = link_context.get("child_links") or [
 				{"child_doctype": child_doctype, "fieldname": link_context["fieldname"]}

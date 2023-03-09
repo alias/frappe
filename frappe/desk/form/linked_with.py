@@ -440,6 +440,10 @@ def get_linked_docs(doctype: str, name: str, linkinfo: dict | None = None) -> di
 			continue
 		linkmeta = link_meta_bundle[0]
 
+		if not linkmeta.get("isvirtual"):
+			# lookup in virtual tables is not impl, also not in vortual child tables - bs
+			continue
+
 		if not linkmeta.get("issingle"):
 			fields = [
 				d.fieldname

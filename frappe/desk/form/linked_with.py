@@ -435,7 +435,10 @@ def get_linked_docs(doctype: str, name: str, linkinfo: dict | None = None) -> di
 			continue
 
 		linked_doctype_meta = frappe.get_meta(linked_doctype)
-
+		if linked_doctype_meta.isvirtual:
+			# lookup in virtual tables is not impl, also not in vortual child tables - bs
+			continue
+		
 		if linked_doctype_meta.issingle:
 			continue
 

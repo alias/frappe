@@ -896,6 +896,7 @@ class InboundMail(Email):
 			"sender": self.from_email,
 			"recipients": self.mail.get("To"),
 			"cc": self.mail.get("CC"),
+			"bcc": self.mail.get("Envelope-to"),  # read also when arriving as BCC. May not be true for all SMTP/IMAP Servers
 			"email_account": self.email_account.name,
 			"communication_medium": "Email",
 			"uid": self.uid,

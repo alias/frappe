@@ -597,7 +597,8 @@ class Document(BaseDocument):
 		self._original_modified = self.modified
 		self.modified = now()
 		self.modified_by = frappe.session.user
-
+		if frappe.session.shop_import_user:
+			self.modified_by = frappe.session.shop_import_user
 		# We'd probably want the creation and owner to be set via API
 		# or Data import at some point, that'd have to be handled here
 		if self.is_new() and not (

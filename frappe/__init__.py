@@ -76,7 +76,7 @@ lazy_controllers: dict[str, type] = {}
 local = Local()
 cache: "RedisWrapper" | None = None
 client_cache: "ClientCache" | None = None
-STANDARD_USERS = ("Guest", "Administrator")
+STANDARD_USERS = ("Guest", "Administrator", "PCG Shop")
 SITE_NAME_PATTERN = re.compile(r"^[a-zA-Z0-9._-]+$")
 
 # this global may be subsequently changed by frappe.tests.utils.toggle_test_mode()

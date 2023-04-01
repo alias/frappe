@@ -88,7 +88,7 @@ if TYPE_CHECKING:  # pragma: no cover
 controllers = {}
 local = Local()
 cache = None
-STANDARD_USERS = ("Guest", "Administrator")
+STANDARD_USERS = ("Guest", "Administrator", "PCG Shop")
 
 _one_time_setup = {}
 _dev_server = int(sbool(os.environ.get("DEV_SERVER", False)))

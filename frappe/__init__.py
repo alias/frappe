@@ -49,7 +49,7 @@ __title__ = "Frappe Framework"
 
 controllers = {}
 local = Local()
-STANDARD_USERS = ("Guest", "Administrator")
+STANDARD_USERS = ("Guest", "Administrator", "PCG Shop")
 
 _dev_server = int(sbool(os.environ.get("DEV_SERVER", False)))
 _qb_patched = {}

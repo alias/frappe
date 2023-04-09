@@ -215,6 +215,7 @@ class MariaDBDatabase(MariaDBConnectionUtil, MariaDBExceptionUtil, Database):
 
 		return db_size[0].get("database_size")
 
+
 	def log_query(self, query, values, debug, explain):
 		self.last_query = self._cursor._executed
 		self._log_query(self.last_query, debug, explain, query)

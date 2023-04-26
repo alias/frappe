@@ -279,46 +279,7 @@ frappe.ui.form.Dashboard = class FormDashboard {
 				// the chartslibrary does not like to render charts in to hidden dom nodes,
 				// but it still seems to work
 				// If it doesn't work anymore, we must be more clever.... 
-
 				this.chart_widgets_area.show();  
-			});
-		}
-
-		if (this.data.chart_widgets){
-			Promise.all(
-			this.data.chart_widgets.map(widget => {
-				let method = widget.method;
-				if (typeof(method) !== "undefined"){
-					let method_args = {
-						...widget.args,
-						"doctype": this.frm.doctype,
-						"docname": this.frm.docname,
-					}
-					return frappe.call(method, method_args);
-				}
-				return undefined;
-			}).filter(widget => typeof(widget) !== "undefined")).then(widgets_responses => {
-				let widgets = widgets_responses.map(r => {let obj = r.message; obj.chart_settings = {filters: JSON.parse(obj.filters_json)}; return obj;});
-				debugger;
-				this.chart_widgets_area.body.empty();
-				this.chart_group = new frappe.widget.WidgetGroup({
-					container: $(this.chart_widgets_area.body),
-					type: "chart",
-					columns: 2,
-					height: 240,
-					options: {
-						allow_sorting: true,
-						allow_create: true,
-						allow_delete: true,
-						allow_hiding: true,
-						allow_resize: true,
-					},
-					widgets: widgets,
-					in_customize_mode: false,
-				});
-				this.chart_widgets_area.show();
-				this.chart_widgets_area.collapse();
-
 			});
 		}
 

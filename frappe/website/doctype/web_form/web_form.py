@@ -449,6 +449,16 @@ def get_context(context):
 
 				context.script = script
 
+			js_list_path = os.path.join(os.path.dirname(web_form_module.__file__), scrub(self.name) + "_list.js")
+			if os.path.exists(js_list_path):
+				list_script = frappe.render_template(open(js_list_path).read(), context)
+
+				for path in get_code_files_via_hooks("webform_include_js", context.doc_type):
+					custom_js = frappe.render_template(open(path).read(), context)
+					list_script = "\n\n".join([list_script, custom_js])
+
+				context.list_script = list_script
+
 			css_path = os.path.join(os.path.dirname(web_form_module.__file__), scrub(self.name) + ".css")
 			if os.path.exists(css_path):
 				style = open(css_path).read()

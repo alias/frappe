@@ -507,6 +507,7 @@ class BaseDocument:
 			eval_locals={"doc": self},
 		)
 
+
 	def get_valid_dict(
 		self, sanitize=True, convert_dates_to_str=False, ignore_nulls=False, ignore_virtual=False
 	) -> _dict:

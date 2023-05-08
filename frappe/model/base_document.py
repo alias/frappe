@@ -354,6 +354,7 @@ class BaseDocument:
 
 		return self.meta.get_table_fields()
 
+
 	def get_valid_dict(
 		self, sanitize=True, convert_dates_to_str=False, ignore_nulls=False, ignore_virtual=False
 	) -> _dict:

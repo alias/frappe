@@ -440,7 +440,10 @@ def update_link_field_values(link_fields: list[dict], old: str, new: str, doctyp
 		else:
 			parent = field["parent"]
 			docfield = field["fieldname"]
-
+			meta = frappe.get_meta(parent)
+			if meta.is_virtual:
+				frappe.log(f"Renaming {doctype, old} to {new} skipping rename in {parent} as it is a virtual doctype")
+				continue
 			# Handles the case where one of the link fields belongs to
 			# the DocType being renamed.
 			# Here this field could have the current DocType as its value too.

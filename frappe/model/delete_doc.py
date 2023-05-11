@@ -298,6 +298,10 @@ def check_if_doc_is_linked(doc, method="Delete"):
 		if meta.istable:
 			fields.extend(["parent", "parenttype"])
 
+		if meta.is_virtual: #oo-sb
+			frappe.log(f"Skipping check before delete of {doc.doctype, doc.name} in {link_dt} as it is a virtual doctype")
+			continue
+
 		for item in frappe.db.get_values(link_dt, {link_field: doc.name}, fields, as_dict=True):
 			# available only in child table cases
 			item_parent = getattr(item, "parent", None)

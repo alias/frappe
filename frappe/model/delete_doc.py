@@ -339,6 +339,10 @@ def get_linked_docs(doc, method="Delete") -> list[dict]:
 		if meta.istable:
 			fields.extend(["parent", "parenttype"])
 
+		if meta.is_virtual: #oo-sb
+			frappe.log(f"Skipping check before delete of {doc.doctype, doc.name} in {link_dt} as it is a virtual doctype")
+			continue
+
 		for item in frappe.db.get_values(
 			link_dt,
 			{link_field: doc.name},

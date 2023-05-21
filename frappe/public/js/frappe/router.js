@@ -454,9 +454,11 @@ frappe.router = {
 			}
 		}).join("/");
 		let private_home = frappe.workspaces[`home-${frappe.user.name.toLowerCase()}`];
+		let last_ws = frappe.route_history.slice().reverse();
+		last_ws = last_ws.find(arr => arr[0] === 'Workspaces' && arr[1] !== 'Build');
 		let default_page = private_home
 			? "private/home"
-			: frappe.workspaces["home"]
+			: last_ws ? last_ws[1].toLowerCase() : frappe.workspaces['home']
 			? "home"
 			: Object.keys(frappe.workspaces)[0];
 		return "/app/" + (path_string || default_page);

@@ -473,6 +473,9 @@ frappe.router = {
 			workspace_name = frappe.workspaces[first_workspace].title;
 			is_private = !frappe.workspaces[first_workspace].public;
 		}
+		let last_ws = frappe.route_history.slice().reverse();
+		last_ws = last_ws.find(arr => arr[0] === 'Workspaces' && arr[1] !== 'Build');
+		workspace_name = last_ws ? last_ws[1] : workspace_name;
 
 		let default_page = (is_private ? "private/" : "") + frappe.router.slug(workspace_name);
 		return "/app/" + (path_string || default_page);

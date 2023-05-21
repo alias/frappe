@@ -497,6 +497,9 @@ frappe.router = {
 				frappe.router.slug(workspace.title)
 			);
 		}
+		let last_ws = frappe.route_history.slice().reverse();
+		last_ws = last_ws.find(arr => arr[0] === 'Workspaces' && arr[1] !== 'Build');
+		workspace_name = last_ws ? last_ws[1] : workspace_name;
 
 		return "/app";
 	},

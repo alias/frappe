@@ -171,6 +171,8 @@ def set_new_name(doc):
 
 	doc.name = validate_name(doc.doctype, doc.name, meta.get_field("name_case"))
 
+	doc.run_method("after_set_new_name")
+
 
 def is_autoincremented(doctype: str, meta: Optional["Meta"] = None) -> bool:
 	"""Checks if the doctype has autoincrement autoname set"""

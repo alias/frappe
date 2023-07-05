@@ -1911,6 +1911,8 @@ def get_list(doctype, *args, **kwargs):
 	        frappe.get_list("ToDo", fields="*", filters = {"description": ("like", "test%")})
 	"""
 	import frappe.model.db_query
+	if is_table(doctype):
+		kwargs['parent_doctype'] = frappe.model.meta.get_parent_dt(doctype)
 
 	return frappe.model.db_query.DatabaseQuery(doctype).execute(*args, **kwargs)
 

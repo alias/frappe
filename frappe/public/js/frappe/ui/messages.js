@@ -26,7 +26,7 @@ frappe.throw = function (msg) {
 	throw new Error(msg.message);
 };
 
-frappe.confirm = function (message, confirm_action, reject_action) {
+frappe.confirm = function (message, confirm_action, reject_action, close_action = null) {
 	var d = new frappe.ui.Dialog({
 		title: __("Confirm", null, "Title of confirmation dialog"),
 		primary_action_label: __("Yes", null, "Approve confirmation dialog"),
@@ -35,7 +35,11 @@ frappe.confirm = function (message, confirm_action, reject_action) {
 			d.hide();
 		},
 		secondary_action_label: __("No", null, "Dismiss confirmation dialog"),
-		secondary_action: () => d.hide(),
+		secondary_action: () => {
+			if (reject_action){
+				reject_action();
+			};
+			d.hide() },
 	});
 
 	d.$body.append(`<p class="frappe-confirm-message">${message}</p>`);
@@ -45,7 +49,14 @@ frappe.confirm = function (message, confirm_action, reject_action) {
 	d.confirm_dialog = true;
 
 	// no if closed without primary action
-	if (reject_action) {
+	if (close_action){
+		d.onhide = () => {
+			if (!d.primary_action_fulfilled) {
+				close_action();
+			}
+		};
+	}
+	else if(reject_action) {
 		d.onhide = () => {
 			if (!d.primary_action_fulfilled) {
 				reject_action();

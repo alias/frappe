@@ -396,10 +396,23 @@ frappe.views.TreeView = class TreeView {
 
 		this.ignore_fields = this.opts.ignore_fields || [];
 
-		var mandatory_fields = $.map(me.opts.meta.fields, function (d) {
-			return d.reqd || (d.bold && !d.read_only && !!d.is_virtual) ? d : null;
+		var mandatory_fields = $.map(me.opts.meta.fields, function (df) {
+			return (df.reqd || df.bold || df.allow_in_quick_entry) && !df.read_only && !df.is_virtual ? df : null;
 		});
 
+		this.fields = this.fields.filter(_ => _ !== undefined);
+
+		if (me.opts.meta.autoname && me.opts.meta.autoname.toLowerCase() === "prompt") {
+			this.fields = [
+				{
+					fieldname: "__newname",
+					label: __("{0} Name", [me.opts.meta.name]),
+					reqd: 1,
+					fieldtype: "Data",
+				},
+			].concat(this.fields);
+		}
+		
 		var opts_field_names = this.fields.map(function (d) {
 			return d.fieldname;
 		});

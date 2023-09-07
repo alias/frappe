@@ -18,7 +18,6 @@ def occurance_checker(title:str, context: str = None, attempt_treshhold = 10, ex
 
     # test_before_key = frappe.cache().get_value(key, expires=True)
     new_attepts = attempts + 1
-    frappe.cache().set_value(key=key, val=new_attepts, user=None, expires_in_sec=expires_in_sec)
     # test_after_key = frappe.cache().get_value(key, expires=True)
     # print(f'before: {test_before_key}, after: {test_after_key}, old_attempts: {attempts}, new_attempts: {new_attepts}')
 
@@ -27,4 +26,6 @@ def occurance_checker(title:str, context: str = None, attempt_treshhold = 10, ex
 
     if attempts >= attempt_treshhold:
         return True
+
+    frappe.cache().set_value(key=key, val=new_attepts, user=None, expires_in_sec=expires_in_sec)
     return False

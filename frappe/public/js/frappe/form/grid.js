@@ -894,6 +894,10 @@ export default class Grid {
 	}
 
 	duplicate_row(d, copy_doc) {
+		let no_duplicate_fields = [];
+		if (doc.doctype in frappe.boot.pcg_web.no_duplicate_fields) {
+			no_duplicate_fields = frappe.boot.pcg_web.no_duplicate_fields[doc.doctype];
+		}
 		$.each(copy_doc, function (key, value) {
 			if (
 				![
@@ -907,7 +911,7 @@ export default class Grid {
 					"name",
 					"parentfield",
 					"shop_id",
-				].includes(key)
+				].concat(no_duplicate_fields).includes(key)
 			) {
 				d[key] = value;
 			}

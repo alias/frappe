@@ -269,7 +269,11 @@ $.extend(frappe.model, {
 	},
 
 	copy_doc: function (doc, from_amend, parent_doc, parentfield) {
-		var no_copy_list = ["name", "amended_from", "amendment_date", "cancel_reason", "shop_id", "wop_id"];
+		let no_duplicate_fields = [];
+		if (doc.doctype in frappe.boot.pcg_web.no_duplicate_fields) {
+			no_duplicate_fields = frappe.boot.pcg_web.no_duplicate_fields[doc.doctype];
+		}
+		var no_copy_list = ["name", "amended_from", "amendment_date", "cancel_reason", "shop_id", "wop_id"].concat(no_duplicate_fields);
 		var newdoc = frappe.model.get_new_doc(doc.doctype, parent_doc, parentfield);
 
 		for (var key in doc) {

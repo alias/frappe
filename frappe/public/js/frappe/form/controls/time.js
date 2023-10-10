@@ -73,18 +73,18 @@ frappe.ui.form.ControlTime = class ControlTime extends frappe.ui.form.ControlDat
 			$tp.$secondsText.prev().css("display", "none");
 		}
 	}
-	set_description() {
-		const { description } = this.df;
-		const { time_zone } = frappe.sys_defaults;
-		if (!frappe.datetime.is_system_time_zone()) {
-			if (!description) {
-				this.df.description = time_zone;
-			} else if (!description.includes(time_zone)) {
-				this.df.description += "<br>" + time_zone;
-			}
-		}
-		super.set_description();
-	}
+	// set_description() {
+	// 	const { description } = this.df;
+	// 	const { time_zone } = frappe.sys_defaults;
+	// 	if (!frappe.datetime.is_system_time_zone()) {
+	// 		if (!description) {
+	// 			this.df.description = time_zone;
+	// 		} else if (!description.includes(time_zone)) {
+	// 			this.df.description += "<br>" + time_zone;
+	// 		}
+	// 	}
+	// 	super.set_description();
+	// }
 	parse(value) {
 		if (value) {
 			if (value == "Invalid date") {

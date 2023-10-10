@@ -56,22 +56,22 @@ frappe.ui.form.ControlDatetime = class ControlDatetime extends frappe.ui.form.Co
 		if (!value) return "";
 		return frappe.datetime.str_to_user(value, false);
 	}
-	set_description() {
-		const description = this.df.description;
-		const time_zone = this.get_user_time_zone();
+	// set_description() {
+	// 	const description = this.df.description;
+	// 	const time_zone = this.get_user_time_zone();
+	// 	this.df.description = _(this.df.description);
+	// 	if (!this.df.hide_timezone) {
+	// 		// Always show the timezone when rendering the Datetime field since the datetime value will
+	// 		// always be in system_time_zone rather then local time.
 
-		if (!this.df.hide_timezone) {
-			// Always show the timezone when rendering the Datetime field since the datetime value will
-			// always be in system_time_zone rather then local time.
-
-			if (!description) {
-				this.df.description = time_zone;
-			} else if (!description.includes(time_zone)) {
-				this.df.description += "<br>" + time_zone;
-			}
-		}
-		super.set_description();
-	}
+	// 		if (!description) {
+	// 			this.df.description = time_zone;
+	// 		} else if (!description.includes(time_zone)) {
+	// 			this.df.description += "<br>" + time_zone;
+	// 		}
+	// 	}
+	// 	super.set_description();
+	// }
 	get_user_time_zone() {
 		return frappe.boot.time_zone ? frappe.boot.time_zone.user : frappe.sys_defaults.time_zone;
 	}

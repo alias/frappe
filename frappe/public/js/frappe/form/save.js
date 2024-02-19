@@ -17,10 +17,15 @@ frappe.ui.form.save = function (frm, action, callback, btn) {
 
 	var save = function () {
 		$(frm.wrapper).addClass("validated-form");
+		const virtual_fieldnames = frm.meta.fields.filter(_ => _.is_virtual == 1).map(_ => _.fieldname);
+		const doc_without_virtual_fields = Object.keys(frm.doc).filter(key => !virtual_fieldnames.includes(key)).reduce((acc, key) => {
+			acc[key] = frm.doc[key];
+			return acc;
+		  }, {});
 		if ((action !== "Save" || frm.is_dirty()) && check_mandatory()) {
 			_call({
 				method: "frappe.desk.form.save.savedocs",
-				args: { doc: frm.doc, action: action },
+				args: { doc: doc_without_virtual_fields, action: action },
 				callback: function (r) {
 					$(document).trigger("save", [frm.doc]);
 					callback(r);

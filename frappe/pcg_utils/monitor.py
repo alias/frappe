@@ -36,20 +36,14 @@ class Monitor:
             self.PORT = port
 
     def __send_internal(self, core_msg):        
-        #DT = round(time.time())                       # dt is only meaningful when sending delayed and using 2003
-        #msg = self.PREFIX + core_msg + " " + str(DT)        
-        msg = self.PREFIX + core_msg
-        if self.DEVELOPER_MODE:                 # avoid flooding the monitor database with test systems
-
-            # This is performance critical
-            # msg = "No monitoring for site localhost: " + msg
-            # if not occurance_checker(f"No monitoring for site localhost: {self.PREFIX}", expires_in_sec=60*30):
-            #     print(msg)
+        DT = round(time.time()) 
+        msg = self.PREFIX + core_msg + " " + str(DT)
+        # avoid flooding the monitor database with test systems
+        if self.DEVELOPER_MODE:                 
             return
         
-        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        #print(msg)
-        sock.sendto(msg.encode(),( self.MONITOR, self.PORT))
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
+            sock.sendto(msg.encode(),(self.MONITOR, self.PORT))
 
     def send_event(self, event_name, count=1):
         """ an event (.._C) uses an sum aggregation scheme """               

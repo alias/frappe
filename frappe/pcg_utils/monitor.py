@@ -11,7 +11,7 @@ class Monitor:
         Use the class instance if you have a special base name, server name or performance reasons
      """
 
-    MONITOR = "159.69.55.13"                     # well known monitor.oekobox-online.de, UDP 
+    MONITOR = "obox-monitor"                     # well known monitor.oekobox-online.de, UDP 
     PORT=2004                                    # 2004: aggregating, 2003: raw (you have to make sure to aggregate < 1min)    site
     PREFIX = "unset."
                                                  # prefix needs to be whitlisted 

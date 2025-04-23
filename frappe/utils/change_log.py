@@ -391,13 +391,6 @@ def show_update_popup():
 			"args": f"https://frappecloud.com/dashboard/sites/{frappe.local.site}",
 		}
 
-	if update_message:
-		frappe.msgprint(
-			update_message,
-			title=_("New updates are available"),
-			indicator="green",
-			primary_action=primary_action,
-		)
 		frappe.cache.srem("changelog-update-user-set", user)
 
 

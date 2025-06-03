@@ -738,7 +738,15 @@ def sendmail(
 	:param with_container: Wraps email inside a styled container
 	"""
 
+	def log(msg):
+		logger = frappe.logger('pcg', allow_site=True, max_size=10_000_000 ,file_count=10)
+		logger.setLevel(10) # logging.DEBUG
+		logger.info(msg)
+		print(msg)
+
 	context = f'{subject}{sender}{recipients}'
+	log(f"Sending email to: {recipients} with subject {subject}")
+	
 	if occurance_checker('send mail', context=context, attempt_treshhold=2, expires_in_sec=60*30):
 		return
 	

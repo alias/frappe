@@ -22,7 +22,8 @@ import frappe.rate_limiter
 import frappe.recorder
 import frappe.utils.response
 from frappe import _
-from frappe.auth import SAFE_HTTP_METHODS, UNSAFE_HTTP_METHODS, HTTPRequest, validate_auth
+from frappe.auth import SAFE_HTTP_METHODS, UNSAFE_HTTP_METHODS, HTTPRequest, check_request_ip, validate_auth
+from frappe.integrations.oauth2 import handle_wellknown
 from frappe.middlewares import StaticDataMiddleware
 from frappe.permissions import handle_does_not_exist_error
 from frappe.utils import CallbackManager, cint, get_site_name
@@ -120,10 +121,8 @@ def application(request: Request):
 		elif request.path.startswith("/private/files/"):
 			response = frappe.utils.response.download_private_file(request.path)
 
-		elif request.path.startswith("/.well-known/oauth-authorization-server") and request.method == "GET":
-			from frappe.integrations.oauth2 import get_authorization_server_metadata
-
-			response = get_authorization_server_metadata()
+		elif request.path.startswith("/.well-known/") and request.method == "GET":
+			response = handle_wellknown(request.path)
 
 		elif request.method in ("GET", "HEAD", "POST"):
 			response = get_response()

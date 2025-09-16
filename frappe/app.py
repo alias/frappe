@@ -21,7 +21,7 @@ import frappe.rate_limiter
 import frappe.recorder
 import frappe.utils.response
 from frappe import _
-from frappe.auth import SAFE_HTTP_METHODS, UNSAFE_HTTP_METHODS, HTTPRequest, check_request_ip, validate_auth
+from frappe.auth import SAFE_HTTP_METHODS, UNSAFE_HTTP_METHODS, HTTPRequest, validate_auth
 from frappe.integrations.oauth2 import get_resource_url, handle_wellknown, is_oauth_metadata_enabled
 from frappe.middlewares import StaticDataMiddleware
 from frappe.permissions import handle_does_not_exist_error
@@ -263,7 +263,8 @@ def process_response(response: Response):
 		set_authenticate_headers(response)
 
 	# Update custom headers added during request processing
-	response.headers.update(frappe.local.response_headers)
+	if hasattr(frappe.local, "response_headers"):
+		response.headers.update(frappe.local.response_headers)
 
 	# Set cookies, only if response is non-cacheable to avoid proxy cache invalidation
 	public_cache = any("public" in h for h in response.headers.getlist("Cache-Control"))

@@ -1,3 +1,9 @@
+/*
+ * Filter Groups Implementation for DNF (Disjunctive Normal Form) Logic
+ * 
+ * Integration with existing FilterGroup in filter_list.js
+ * Use the "Add OR Condition" button to create filter groups with DNF logic
+ */
 frappe.ui.Filter = class {
 	constructor(opts) {
 		$.extend(this, opts);
@@ -93,7 +99,13 @@ frappe.ui.Filter = class {
 				conditions: this.conditions,
 			})
 		);
-		this.parent && this.filter_edit_area.appendTo(this.parent.find(".filter-edit-area"));
+		
+		// Filters are always added to a group's filters-in-group container
+		// The parent should be the filter-group-area
+		if (this.parent && this.parent.find('.filters-in-group').length > 0) {
+			this.filter_edit_area.appendTo(this.parent.find('.filters-in-group'));
+		}
+		
 		this.make_select();
 		this.set_events();
 		this.setup();

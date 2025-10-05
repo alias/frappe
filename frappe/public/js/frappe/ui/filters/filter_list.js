@@ -1,12 +1,130 @@
+// Individual OR group container for DNF logic
+frappe.ui.FilterOrGroup = class {
+	constructor(opts) {
+		$.extend(this, opts);
+		this.filters = []; // Filters specific to this group
+		this.make();
+	}
+
+	make() {
+		this.group_container = $(`
+			<div class="filter-group-area" style="border: 2px solid #d1d8dd; border-radius: 6px; margin-bottom: 12px; padding: 8px;">
+				<div class="filter-group-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+					<button class="btn btn-xs btn-primary add-filter-to-group">
+						${__("Add Filter")}
+					</button>
+					<button class="btn btn-xs btn-danger remove-group" style="margin-left: 8px;">
+						${__("Remove Group")}
+					</button>
+				</div>
+				<div class="filters-in-group"></div>
+			</div>
+		`);
+
+		this.parent_wrapper.find('.filter-groups-container').append(this.group_container);
+		this.filters_container = this.group_container.find('.filters-in-group');
+
+		// Set up events
+		this.group_container.find('.add-filter-to-group').on('click', () => this.add_filter());
+		this.group_container.find('.remove-group').on('click', () => this.remove());
+
+		// Add the first filter
+		this.add_filter();
+	}
+
+	add_filter(doctype, fieldname, condition, value) {
+		let args = {
+			parent: this.group_container,
+			parent_doctype: this.parent_doctype,
+			doctype: doctype || this.parent_doctype,
+			_parent_doctype: this._parent_doctype,
+			fieldname: fieldname || "name",
+			condition: condition,
+			value: value,
+			index: this.filters.length + 1,
+			on_change: () => {
+				if (this.on_change) this.on_change();
+			},
+			filter_items: (dt, fn) => {
+				return !this.filter_exists([dt, fn]);
+			},
+			filter_list: this.filter_list,
+		};
+
+		let filter = new frappe.ui.Filter(args);
+		filter.filter_edit_area.appendTo(this.filters_container);
+		this.filters.push(filter);
+
+		// Override remove to handle cleanup within THIS group only
+		const original_remove = filter.remove.bind(filter);
+		filter.remove = () => {
+			// Remove from THIS group's filters array
+			this.filters = this.filters.filter(f => f !== filter);
+
+			// Remove the DOM element
+			original_remove();
+
+			// If this was the last filter in the group, remove the group
+			if (this.filters.length === 0) {
+				this.remove();
+			} else if (this.on_change) {
+				this.on_change();
+			}
+		};
+
+		return filter;
+	}
+
+	filter_exists(filter_value) {
+		return this.filters
+			.filter((f) => f.field)
+			.some((f) => {
+				let f_value = f.get_value();
+				if (filter_value.length === 2) {
+					return filter_value[0] === f_value[0] && filter_value[1] === f_value[1];
+				}
+				return frappe.utils.arrays_equal(f_value.slice(0, 4), filter_value.slice(0, 4));
+			});
+	}
+
+	get_filters() {
+		return this.filters
+			.filter((f) => f.field)
+			.map((f) => f.get_value())
+			.filter(value => value && value[2] && (value[3] !== "" && value[3] !== null && value[3] !== undefined));
+	}
+
+	remove() {
+		// Remove all filters in this group
+		this.filters.forEach((f) => {
+			try {
+				f.filter_edit_area.remove();
+				f.field = null;
+			} catch (e) {
+				// Ignore errors
+			}
+		});
+		this.filters = [];
+
+		// Remove the group container
+		this.group_container.remove();
+
+		// Notify parent
+		if (this.on_remove) this.on_remove();
+	}
+};
+
 frappe.ui.FilterGroup = class {
 	constructor(opts) {
 		$.extend(this, opts);
-		this.filters = this.filters || [];
+		this.or_groups = []; // Array to hold OR filter groups for DNF logic
 		window.fltr = this;
 		if (!this.filter_button) {
 			this.wrapper = this.parent;
 			this.wrapper.append(this.get_filter_area_template());
 			this.set_filter_events();
+			// Initialize with one OR group containing one filter
+			this.add_or_condition();
 		} else {
 			this.make_popover();
 		}
@@ -22,7 +140,6 @@ frappe.ui.FilterGroup = class {
 		if (!this.filter_x_button) return;
 
 		this.filter_x_button.on("click", () => {
-			this.toggle_empty_filters(true);
 			if (typeof this.base_list !== "undefined") {
 				// It's a list view. Clear all the filters, also the ones in the
 				// FilterArea outside this FilterGroup
@@ -30,6 +147,8 @@ frappe.ui.FilterGroup = class {
 			} else {
 				// Not a list view, just clear the filters in this FilterGroup
 				this.clear_filters();
+				// Add a new empty OR group
+				this.add_or_condition();
 			}
 			this.update_filter_button();
 		});
@@ -57,9 +176,7 @@ frappe.ui.FilterGroup = class {
 		});
 	}
 
-	toggle_empty_filters(show) {
-		this.wrapper && this.wrapper.find(".empty-filters").toggle(show);
-	}
+
 
 	set_popover_events() {
 		$(document.body).on("click", (e) => {
@@ -88,18 +205,12 @@ frappe.ui.FilterGroup = class {
 		});
 
 		this.filter_button.on("shown.bs.popover", () => {
-			let hide_empty_filters = this.filters && this.filters.length > 0;
-
 			if (!this.wrapper) {
 				this.wrapper = $(".filter-popover");
-				if (hide_empty_filters) {
-					this.toggle_empty_filters(false);
-					this.add_filters_to_popover(this.filters);
-				}
 				this.set_filter_events();
+				// Initialize with one OR group
+				this.add_or_condition();
 			}
-			this.toggle_empty_filters(false);
-			!hide_empty_filters && this.add_filter(this.doctype, "name");
 		});
 
 		this.filter_button.on("hidden.bs.popover", () => {
@@ -114,23 +225,23 @@ frappe.ui.FilterGroup = class {
 		});
 	}
 
-	add_filters_to_popover(filters) {
-		filters.forEach((filter) => {
-			filter.parent = this.wrapper;
-			filter.field = null;
-			filter.make();
-		});
-	}
-
 	apply() {
 		this.update_filters();
 		this.on_change();
 	}
 
 	update_filter_button() {
-		const filters_applied = this.filters.length > 0;
+		// Count total filters across all OR groups
+		let total_filters = 0;
+		if (this.or_groups) {
+			this.or_groups.forEach(group => {
+				total_filters += group.filters.length;
+			});
+		}
+		
+		const filters_applied = total_filters > 0;
 		const button_label = filters_applied
-			? __("Filters {0}", [`<span class="filter-label">${this.filters.length}</span>`])
+			? __("Filters {0}", [`<span class="filter-label">${total_filters}</span>`])
 			: __("Filter");
 
 		this.filter_button
@@ -142,19 +253,19 @@ frappe.ui.FilterGroup = class {
 		this.filter_button.find(".button-label").html(button_label);
 		this.filter_button.attr(
 			"title",
-			`${this.filters.length} Filter${this.filters.length > 1 ? "s" : ""} Applied`
+			`${total_filters} Filter${total_filters > 1 ? "s" : ""} Applied`
 		);
 	}
 
 	set_filter_events() {
-		this.wrapper.find(".add-filter").on("click", () => {
-			this.toggle_empty_filters(false);
-			this.add_filter(this.doctype, "name");
+		this.wrapper.find(".add-or-condition").on("click", () => {
+			this.add_or_condition();
 		});
 
 		this.wrapper.find(".clear-filters").on("click", () => {
-			this.toggle_empty_filters(true);
 			this.clear_filters();
+			// After clearing, add a new empty OR group
+			this.add_or_condition();
 			this.on_change();
 			this.hide_popover();
 		});
@@ -163,149 +274,115 @@ frappe.ui.FilterGroup = class {
 	}
 
 	add_filters(filters) {
+		// Add filters to the first OR group, or create a new group if none exist
+		if (!this.or_groups || this.or_groups.length === 0) {
+			this.add_or_condition();
+		}
+		
 		let promises = [];
-
 		for (const filter of filters) {
-			promises.push(() => this.add_filter(...filter));
+			const [doctype, fieldname, condition, value] = filter;
+			promises.push(() => {
+				return Promise.resolve(
+					this.or_groups[0].add_filter(doctype, fieldname, condition, value)
+				);
+			});
 		}
 
 		return frappe.run_serially(promises).then(() => this.update_filters());
 	}
 
-	add_filter(doctype, fieldname, condition, value, hidden) {
-		if (!fieldname) return Promise.resolve();
-		// adds a new filter, returns true if filter has been added
-
-		// {}: Add in page filter by fieldname if exists ('=' => 'like')
-
-		if (!this.validate_args(doctype, fieldname)) return false;
-		const is_new_filter = arguments.length < 2;
-		if (is_new_filter && this.wrapper.find(".new-filter:visible").length) {
-			// only allow 1 new filter at a time!
-			return Promise.resolve();
-		} else {
-			let args = [doctype, fieldname, condition, value, hidden];
-			const promise = this.push_new_filter(args, is_new_filter);
-			return promise && promise.then ? promise : Promise.resolve();
-		}
-	}
-
-	validate_args(doctype, fieldname) {
-		if (
-			doctype &&
-			fieldname &&
-			!frappe.meta.has_field(doctype, fieldname) &&
-			frappe.model.is_non_std_field(fieldname)
-		) {
-			frappe.msgprint({
-				message: __("Invalid filter: {0}", [fieldname.bold()]),
-				indicator: "red",
-			});
-
-			return false;
-		}
-		return true;
-	}
-
-	push_new_filter(args) {
-		// args: [doctype, fieldname, condition, value]
-		if (this.filter_exists(args)) return;
-
-		// {}: Clear page filter fieldname field
-
-		let filter = this._push_new_filter(...args);
-
-		if (filter && filter.value) {
-			// filter.setup_state(is_new_filter);
-			return filter._filter_value_set; // internal promise
-		}
-	}
-
-	_push_new_filter(doctype, fieldname, condition, value, hidden = false) {
-		let args = {
-			parent: this.wrapper,
-			parent_doctype: this.doctype,
-			doctype: doctype,
-			_parent_doctype: this.parent_doctype,
-			fieldname: fieldname,
-			condition: condition,
-			value: value,
-			hidden: hidden,
-			index: this.filters.length + 1,
-			on_change: (update) => {
-				if (update) this.update_filters();
-				this.on_change();
-			},
-			filter_items: (doctype, fieldname) => {
-				return !this.filter_exists([doctype, fieldname]);
-			},
-			filter_list: this.base_list || this,
-		};
-
-		let filter = new frappe.ui.Filter(args);
-		this.filters.push(filter);
-		return filter;
-	}
-
 	get_filter_value(fieldname) {
-		let filter_obj = this.filters.find((f) => f.fieldname == fieldname) || {};
-		return filter_obj.value;
+		// Search for the filter across all OR groups
+		if (this.or_groups) {
+			for (let group of this.or_groups) {
+				let filter_obj = group.filters.find((f) => f.fieldname == fieldname);
+				if (filter_obj) {
+					return filter_obj.value;
+				}
+			}
+		}
+		return undefined;
 	}
 
 	filter_exists(filter_value) {
 		// filter_value of form: [doctype, fieldname, condition, value]
-		return this.filters
-			.filter((f) => f.field)
-			.some((f) => {
-				let f_value = f.get_value();
-				if (filter_value.length === 2) {
-					return filter_value[0] === f_value[0] && filter_value[1] === f_value[1];
-				}
-				return frappe.utils.arrays_equal(f_value.slice(0, 4), filter_value.slice(0, 4));
-			});
+		// Check in OR groups
+		if (this.or_groups) {
+			return this.or_groups.some(group => group.filter_exists(filter_value));
+		}
+		
+		return false;
 	}
 
 	get_filters() {
-		return this.filters
-			.filter((f) => f.field)
-			.map((f) => {
-				return f.get_value();
+		// Return groups of filters (OR between groups, AND within groups)
+		if (this.or_groups && this.or_groups.length > 0) {
+			let groups = [];
+			
+			// Get filters from each OR group
+			this.or_groups.forEach((or_group) => {
+				let group_filters = or_group.get_filters();
+				if (group_filters.length > 0) {
+					groups.push(group_filters);
+				}
 			});
+			
+			// If there's only one group with filters, return flat array for backward compatibility
+			if (groups.length === 1) {
+				return groups[0];
+			}
+			
+			return groups;
+		}
+		
+		return [];
 	}
 
 	update_filters() {
-		// remove hidden filters and undefined filters
-		const filter_exists = (f) => ![undefined, null].includes(f.get_selected_value());
-		this.filters.map((f) => !filter_exists(f) && f.remove());
-		this.filters = this.filters.filter((f) => filter_exists(f) && f.field);
+		// OR groups handle their own filter cleanup and auto-remove when empty
 		this.update_filter_button();
-		this.filters.length === 0 && this.toggle_empty_filters(true);
 	}
 
 	clear_filters() {
-		this.filters.map((f) => f.remove(true));
-		// {}: Clear page filters, .date-range-picker (called list run())
-		this.filters = [];
+		// Remove all OR filter groups
+		if (this.or_groups) {
+			this.or_groups.forEach((group) => {
+				try {
+					group.remove();
+				} catch (e) {
+					// Ignore errors
+				}
+			});
+			this.or_groups = [];
+		}
+		
+		// Update once at the end
+		this.update_filter_button();
 	}
 
 	get_filter(fieldname) {
-		return this.filters.filter((f) => {
-			return f.field && f.field.df.fieldname == fieldname;
-		})[0];
+		// Search for the filter across all OR groups
+		if (this.or_groups) {
+			for (let group of this.or_groups) {
+				let filter = group.filters.find((f) => {
+					return f.field && f.field.df.fieldname == fieldname;
+				});
+				if (filter) return filter;
+			}
+		}
+		return undefined;
 	}
 
 	get_filter_area_template() {
 		return $(`
 			<div class="filter-area">
-				<div class="filter-edit-area">
-					<div class="text-muted empty-filters text-center">
-						${__("No filters selected")}
-					</div>
+				<div class="filter-groups-container">
 				</div>
 				<hr class="divider"></hr>
 				<div class="filter-action-buttons mt-2">
-					<button class="text-muted add-filter btn btn-xs">
-						+ ${__("Add a Filter")}
+					<button class="text-muted add-or-condition btn btn-xs">
+						+ ${__("Add OR Condition")}
 					</button>
 					<div>
 						<button class="btn btn-secondary btn-xs clear-filters">
@@ -333,11 +410,37 @@ frappe.ui.FilterGroup = class {
 
 	add_filters_to_filter_group(filters) {
 		if (filters && filters.length) {
-			this.toggle_empty_filters(false);
+			// Add filters to the first OR group, or create a new group if none exist
+			if (!this.or_groups || this.or_groups.length === 0) {
+				this.add_or_condition();
+			}
+			
 			filters.forEach((filter) => {
-				this.add_filter(filter[0], filter[1], filter[2], filter[3]);
+				this.or_groups[0].add_filter(filter[0], filter[1], filter[2], filter[3]);
 			});
 		}
+	}
+
+	add_or_condition() {
+		// Create a new filter group for OR logic
+		let or_group = new frappe.ui.FilterOrGroup({
+			parent_wrapper: this.wrapper,
+			parent_doctype: this.doctype,
+			_parent_doctype: this.parent_doctype,
+			filter_list: this.base_list || this,
+			on_change: () => {
+				this.update_filters();
+				this.on_change();
+			},
+			on_remove: () => {
+				// Remove from or_groups array
+				this.or_groups = this.or_groups.filter(g => g !== or_group);
+				this.update_filters();
+				this.on_change();
+			}
+		});
+
+		this.or_groups.push(or_group);
 	}
 
 	add(filters, refresh = true) {

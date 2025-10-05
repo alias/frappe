@@ -57,6 +57,8 @@ class DatabaseQuery:
 		self.conditions = []
 		self.or_conditions = []
 		self.fields = None
+		self.filters = None
+		self.or_filters = None
 		self.user = user or frappe.session.user
 		self.ignore_ifnull = False
 		self.flags = frappe._dict()
@@ -334,6 +336,8 @@ from {tables}
 					self.fields = json.loads(self.fields)
 				except ValueError:
 					self.fields = [f.strip() for f in self.fields.split(",")]
+		elif self.fields is None:
+			self.fields = []
 
 		# remove empty strings / nulls in fields
 		self.fields = [f for f in self.fields if f]
@@ -588,15 +592,73 @@ from {tables}
 				self.conditions.append(f"({match_conditions})")
 
 	def build_filter_conditions(self, filters, conditions: list, ignore_permissions=None):
-		"""build conditions from user filters"""
+		"""build conditions from user filters
+		
+		Supports both traditional and DNF (Disjunctive Normal Form) formats:
+		
+		1. Traditional format (backward compatible):
+		   - Input: [["DocType", "field", "=", "value"], ["DocType", "field2", "=", "value2"]]
+		   - Result: (condition1 AND condition2)
+		   
+		2. DNF format (OR groups):
+		   - Input: [[["DocType", "field1", "=", "val1"], ["DocType", "field2", "=", "val2"]], 
+		             [["DocType", "field3", "=", "val3"]]]
+		   - Result: ((condition1 AND condition2) OR (condition3))
+		   - Each inner list is an AND group, groups are OR connected
+		"""
 		if ignore_permissions is not None:
 			self.flags.ignore_permissions = ignore_permissions
 
 		if isinstance(filters, dict):
 			filters = [filters]
 
-		for f in filters:
-			conditions.append(self.prepare_filter_condition(f))
+		if not filters:
+			return
+
+		# Detect DNF format by checking if first element contains a list/tuple as its first element
+		# Traditional: [["DocType", "field", "=", "value"], ...] - first_filter[0] is string
+		# DNF format: [[["DocType", "field", "=", "value"]], ...] - first_filter[0] is list/tuple
+		is_dnf = False
+		if isinstance(filters, list) and len(filters) > 0:
+			first_filter = filters[0]
+			
+			# Skip dicts and move to next element if needed
+			if isinstance(first_filter, dict):
+				is_dnf = False
+			elif isinstance(first_filter, (list, tuple)) and len(first_filter) > 0:
+				# Check what the first element contains
+				first_inner = first_filter[0]
+				# If first inner element is a list/tuple, this is DNF format
+				# If first inner element is a string/dict, this is traditional format
+				is_dnf = isinstance(first_inner, (list, tuple))
+
+		if is_dnf:
+			# DNF format: [[[filter, filter], [filter]], [[filter]]]
+			# Each outer element is an OR group containing AND-connected filters
+			or_groups = []
+			for filter_group in filters:
+				group_conditions = []
+				
+				# Handle dict filters within a group
+				if isinstance(filter_group, dict):
+					filter_group = [filter_group]
+				
+				# Process each filter in the AND group
+				for f in filter_group:
+					group_conditions.append(self.prepare_filter_condition(f))
+				
+				if group_conditions:
+					# Wrap AND conditions in parentheses
+					or_groups.append(f"({' and '.join(group_conditions)})")
+			
+			if or_groups:
+				# Combine OR groups with OR operator
+				conditions.append(f"({' or '.join(or_groups)})")
+		else:
+			# Traditional format: [filter, filter, ...]
+			# All filters are AND connected
+			for f in filters:
+				conditions.append(self.prepare_filter_condition(f))
 
 	def remove_field(self, idx: int):
 		if self.as_list:

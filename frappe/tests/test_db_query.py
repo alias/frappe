@@ -1514,3 +1514,468 @@ def create_nested_doctype_records():
 		d = frappe.new_doc("Nested DocType")
 		d.update(r)
 		d.insert(ignore_permissions=True, ignore_if_duplicate=True)
+
+
+class TestDNFFilters(FrappeTestCase):
+	"""
+	Test DNF (Disjunctive Normal Form) filter support in DatabaseQuery.
+	
+	DNF format: (A AND B) OR (C AND D) OR (E)
+	This allows complex filtering where:
+	- Each inner list represents filters connected with AND
+	- Outer lists are connected with OR
+	
+	Backward compatibility is maintained:
+	- Traditional flat list of filters: [filter1, filter2] → (filter1 AND filter2)
+	- DNF nested list: [[filter1, filter2], [filter3]] → ((filter1 AND filter2) OR (filter3))
+	"""
+
+	@classmethod
+	def setUpClass(cls):
+		super().setUpClass()
+		frappe.set_user("Administrator")
+		cls.setup_test_data()
+
+	@classmethod
+	def setup_test_data(cls):
+		"""Create test documents for filtering tests"""
+		# Clean up any existing test data
+		frappe.db.delete("ToDo", {"description": ["like", "DNF Test%"]})
+		
+		# Create test ToDo documents with various attributes
+		cls.test_todos = []
+		
+		# Group 1: High priority and Open status
+		cls.test_todos.append(
+			frappe.get_doc(
+				doctype="ToDo",
+				description="DNF Test - High Priority Open",
+				priority="High",
+				status="Open",
+				allocated_to="Administrator",
+			).insert()
+		)
+		
+		# Group 2: High priority and Closed status
+		cls.test_todos.append(
+			frappe.get_doc(
+				doctype="ToDo",
+				description="DNF Test - High Priority Closed",
+				priority="High",
+				status="Closed",
+				allocated_to="Administrator",
+			).insert()
+		)
+		
+		# Group 3: Low priority and Open status
+		cls.test_todos.append(
+			frappe.get_doc(
+				doctype="ToDo",
+				description="DNF Test - Low Priority Open",
+				priority="Low",
+				status="Open",
+				allocated_to="Administrator",
+			).insert()
+		)
+		
+		# Group 4: Low priority and Closed status
+		cls.test_todos.append(
+			frappe.get_doc(
+				doctype="ToDo",
+				description="DNF Test - Low Priority Closed",
+				priority="Low",
+				status="Closed",
+				allocated_to="Administrator",
+			).insert()
+		)
+		
+		# Group 5: Medium priority and Open status (different allocated_to)
+		cls.test_todos.append(
+			frappe.get_doc(
+				doctype="ToDo",
+				description="DNF Test - Medium Priority Open Different User",
+				priority="Medium",
+				status="Open",
+				allocated_to="test@example.com",
+			).insert()
+		)
+		
+		frappe.db.commit()
+
+	@classmethod
+	def tearDownClass(cls):
+		"""Clean up test data"""
+		for todo in cls.test_todos:
+			try:
+				todo.delete()
+			except Exception:
+				pass
+		frappe.db.commit()
+		super().tearDownClass()
+
+	def test_traditional_filter_format_and_logic(self):
+		"""
+		Test backward compatibility: Traditional flat list of filters with AND logic.
+		
+		Format: [["DocType", "field", "operator", "value"], ...]
+		Logic: condition1 AND condition2 AND ...
+		"""
+		# Traditional format: Find High priority AND Open status
+		filters = [
+			["ToDo", "description", "like", "DNF Test%"],
+			["ToDo", "priority", "=", "High"],
+			["ToDo", "status", "=", "Open"],
+		]
+		
+		results = frappe.get_all(
+			"ToDo",
+			filters=filters,
+			fields=["name", "description", "priority", "status"],
+		)
+		
+		# Should return only 1 document: High Priority Open
+		self.assertEqual(len(results), 1)
+		self.assertIn("High Priority Open", results[0].description)
+		self.assertEqual(results[0].priority, "High")
+		self.assertEqual(results[0].status, "Open")
+
+	def test_traditional_filter_format_multiple_results(self):
+		"""
+		Test traditional format returning multiple results with AND logic.
+		"""
+		# Find all High priority tasks (regardless of status)
+		filters = [
+			["ToDo", "description", "like", "DNF Test%"],
+			["ToDo", "priority", "=", "High"],
+		]
+		
+		results = frappe.get_all(
+			"ToDo",
+			filters=filters,
+			fields=["name", "description", "priority", "status"],
+		)
+		
+		# Should return 2 documents: High Priority Open and High Priority Closed
+		self.assertEqual(len(results), 2)
+		for result in results:
+			self.assertEqual(result.priority, "High")
+			self.assertIn("High Priority", result.description)
+
+	def test_dnf_format_single_or_group(self):
+		"""
+		Test DNF format with single OR group (should behave like traditional).
+		
+		Format: [[["DocType", "field", "operator", "value"], ...]]
+		Logic: (condition1 AND condition2)
+		"""
+		# DNF with single group: (High priority AND Open status)
+		filters = [
+			[
+				["ToDo", "description", "like", "DNF Test%"],
+				["ToDo", "priority", "=", "High"],
+				["ToDo", "status", "=", "Open"],
+			]
+		]
+		
+		results = frappe.get_all(
+			"ToDo",
+			filters=filters,
+			fields=["name", "description", "priority", "status"],
+		)
+		
+		# Should return 1 document: High Priority Open
+		self.assertEqual(len(results), 1)
+		self.assertIn("High Priority Open", results[0].description)
+
+	def test_dnf_format_two_or_groups(self):
+		"""
+		Test DNF format with two OR groups.
+		
+		Format: [[[filter1, filter2]], [[filter3, filter4]]]
+		Logic: (filter1 AND filter2) OR (filter3 AND filter4)
+		"""
+		# DNF: (High priority AND Open) OR (Low priority AND Closed)
+		filters = [
+			[
+				["ToDo", "description", "like", "DNF Test%"],
+				["ToDo", "priority", "=", "High"],
+				["ToDo", "status", "=", "Open"],
+			],
+			[
+				["ToDo", "description", "like", "DNF Test%"],
+				["ToDo", "priority", "=", "Low"],
+				["ToDo", "status", "=", "Closed"],
+			],
+		]
+		
+		results = frappe.get_all(
+			"ToDo",
+			filters=filters,
+			fields=["name", "description", "priority", "status"],
+		)
+		
+		# Should return 2 documents:
+		# 1. High Priority Open
+		# 2. Low Priority Closed
+		self.assertEqual(len(results), 2)
+		
+		descriptions = [r.description for r in results]
+		self.assertTrue(any("High Priority Open" in d for d in descriptions))
+		self.assertTrue(any("Low Priority Closed" in d for d in descriptions))
+
+	def test_dnf_format_three_or_groups_complex(self):
+		"""
+		Test DNF format with three OR groups for complex filtering.
+		
+		Format: [[[f1, f2]], [[f3, f4]], [[f5]]]
+		Logic: (f1 AND f2) OR (f3 AND f4) OR (f5)
+		"""
+		# DNF: (High priority AND Open) OR (Low priority AND Closed) OR (Medium priority)
+		filters = [
+			[
+				["ToDo", "description", "like", "DNF Test%"],
+				["ToDo", "priority", "=", "High"],
+				["ToDo", "status", "=", "Open"],
+			],
+			[
+				["ToDo", "description", "like", "DNF Test%"],
+				["ToDo", "priority", "=", "Low"],
+				["ToDo", "status", "=", "Closed"],
+			],
+			[
+				["ToDo", "description", "like", "DNF Test%"],
+				["ToDo", "priority", "=", "Medium"],
+			],
+		]
+		
+		results = frappe.get_all(
+			"ToDo",
+			filters=filters,
+			fields=["name", "description", "priority", "status"],
+		)
+		
+		# Should return 3 documents:
+		# 1. High Priority Open
+		# 2. Low Priority Closed
+		# 3. Medium Priority Open
+		self.assertEqual(len(results), 3)
+		
+		priorities = {r.priority for r in results}
+		self.assertIn("High", priorities)
+		self.assertIn("Low", priorities)
+		self.assertIn("Medium", priorities)
+
+	def test_dnf_format_single_condition_per_group(self):
+		"""
+		Test DNF format where each OR group has only one condition.
+		
+		Format: [[[filter1]], [[filter2]], [[filter3]]]
+		Logic: (filter1) OR (filter2) OR (filter3)
+		"""
+		# DNF: (High priority) OR (Medium priority) OR (Low priority with Open status)
+		filters = [
+			[["ToDo", "description", "like", "DNF Test%"], ["ToDo", "priority", "=", "High"]],
+			[["ToDo", "description", "like", "DNF Test%"], ["ToDo", "priority", "=", "Medium"]],
+			[
+				["ToDo", "description", "like", "DNF Test%"],
+				["ToDo", "priority", "=", "Low"],
+				["ToDo", "status", "=", "Open"],
+			],
+		]
+		
+		results = frappe.get_all(
+			"ToDo",
+			filters=filters,
+			fields=["name", "description", "priority", "status"],
+		)
+		
+		# Should return:
+		# - 2 High priority (Open and Closed)
+		# - 1 Medium priority
+		# - 1 Low priority Open
+		# Total: 4 documents
+		self.assertEqual(len(results), 4)
+
+	def test_dnf_format_with_different_operators(self):
+		"""
+		Test DNF format with various operators (like, =, !=, etc.)
+		"""
+		# DNF: (Description contains "High" AND status Open) OR (Priority is Medium)
+		filters = [
+			[
+				["ToDo", "description", "like", "%High%"],
+				["ToDo", "status", "=", "Open"],
+			],
+			[
+				["ToDo", "description", "like", "DNF Test%"],
+				["ToDo", "priority", "=", "Medium"],
+			],
+		]
+		
+		results = frappe.get_all(
+			"ToDo",
+			filters=filters,
+			fields=["name", "description", "priority", "status"],
+		)
+		
+		# Should return:
+		# 1. High Priority Open (matches first group)
+		# 2. Medium Priority Open (matches second group)
+		self.assertEqual(len(results), 2)
+		
+		descriptions = [r.description for r in results]
+		self.assertTrue(any("High Priority Open" in d for d in descriptions))
+		self.assertTrue(any("Medium Priority Open" in d for d in descriptions))
+
+	def test_dnf_format_empty_results(self):
+		"""
+		Test DNF format that should return no results.
+		"""
+		# DNF: (High priority AND status Cancelled) OR (Medium priority AND status Cancelled)
+		# No documents match these criteria
+		filters = [
+			[
+				["ToDo", "description", "like", "DNF Test%"],
+				["ToDo", "priority", "=", "High"],
+				["ToDo", "status", "=", "Cancelled"],
+			],
+			[
+				["ToDo", "description", "like", "DNF Test%"],
+				["ToDo", "priority", "=", "Medium"],
+				["ToDo", "status", "=", "Cancelled"],
+			],
+		]
+		
+		results = frappe.get_all(
+			"ToDo",
+			filters=filters,
+			fields=["name", "description", "priority", "status"],
+		)
+		
+		# Should return 0 documents
+		self.assertEqual(len(results), 0)
+
+	def test_dnf_vs_traditional_equivalence(self):
+		"""
+		Test that single-group DNF produces same results as traditional format.
+		"""
+		base_filters = [
+			["ToDo", "description", "like", "DNF Test%"],
+			["ToDo", "priority", "=", "High"],
+			["ToDo", "status", "=", "Open"],
+		]
+		
+		# Traditional format
+		traditional_results = frappe.get_all(
+			"ToDo",
+			filters=base_filters,
+			fields=["name", "description", "priority", "status"],
+		)
+		
+		# DNF format with single group
+		dnf_results = frappe.get_all(
+			"ToDo",
+			filters=[base_filters],
+			fields=["name", "description", "priority", "status"],
+		)
+		
+		# Both should return same results
+		self.assertEqual(len(traditional_results), len(dnf_results))
+		traditional_names = {r.name for r in traditional_results}
+		dnf_names = {r.name for r in dnf_results}
+		self.assertEqual(traditional_names, dnf_names)
+
+	def test_dnf_format_with_dict_filters(self):
+		"""
+		Test that dict filters still work in DNF format (edge case).
+		"""
+		# This is an edge case - mixing dict and list formats
+		# Traditional dict format should still work
+		filters = {
+			"description": ["like", "DNF Test%"],
+			"priority": "High",
+			"status": "Open",
+		}
+		
+		results = frappe.get_all(
+			"ToDo",
+			filters=filters,
+			fields=["name", "description", "priority", "status"],
+		)
+		
+		# Should return 1 document: High Priority Open
+		self.assertEqual(len(results), 1)
+		self.assertIn("High Priority Open", results[0].description)
+
+	def test_dnf_real_world_scenario_task_filtering(self):
+		"""
+		Real-world scenario: Find tasks that need attention.
+		
+		Show me tasks where:
+		- (High priority AND Open) OR
+		- (Any priority AND allocated to specific user)
+		"""
+		filters = [
+			[
+				["ToDo", "description", "like", "DNF Test%"],
+				["ToDo", "priority", "=", "High"],
+				["ToDo", "status", "=", "Open"],
+			],
+			[
+				["ToDo", "description", "like", "DNF Test%"],
+				["ToDo", "allocated_to", "=", "test@example.com"],
+			],
+		]
+		
+		results = frappe.get_all(
+			"ToDo",
+			filters=filters,
+			fields=["name", "description", "priority", "status", "allocated_to"],
+		)
+		
+		# Should return:
+		# 1. High Priority Open (allocated to Administrator)
+		# 2. Medium Priority Open (allocated to test@example.com)
+		self.assertEqual(len(results), 2)
+		
+		# Verify the results match our criteria
+		for result in results:
+			is_high_priority_open = (result.priority == "High" and result.status == "Open")
+			is_allocated_to_test_user = (result.allocated_to == "test@example.com")
+			self.assertTrue(is_high_priority_open or is_allocated_to_test_user)
+
+	def test_dnf_detection_logic(self):
+		"""
+		Test the internal DNF detection logic directly via DatabaseQuery.
+		This verifies that the format detection works correctly.
+		"""
+		# Test traditional format detection
+		traditional_filters = [
+			["ToDo", "priority", "=", "High"],
+			["ToDo", "status", "=", "Open"],
+		]
+		
+		db_query_traditional = DatabaseQuery("ToDo")
+		db_query_traditional.filters = traditional_filters
+		db_query_traditional.parse_args()
+		db_query_traditional.build_conditions()
+		
+		# Traditional format should create AND conditions
+		# Check that we have multiple conditions
+		self.assertGreaterEqual(len(db_query_traditional.conditions), 2)
+		
+		# Test DNF format detection
+		dnf_filters = [
+			[["ToDo", "priority", "=", "High"], ["ToDo", "status", "=", "Open"]],
+			[["ToDo", "priority", "=", "Low"]],
+		]
+		
+		db_query_dnf = DatabaseQuery("ToDo")
+		db_query_dnf.filters = dnf_filters
+		db_query_dnf.parse_args()
+		db_query_dnf.build_conditions()
+		
+		# DNF format should create OR-wrapped conditions
+		# The conditions should contain OR logic
+		conditions_str = " ".join(db_query_dnf.conditions)
+		self.assertIn("or", conditions_str.lower())

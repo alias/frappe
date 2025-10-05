@@ -130,24 +130,55 @@ def validate_fields(data):
 
 def validate_filters(data, filters):
 	if isinstance(filters, list):
-		# filters as list
-		for condition in filters:
-			if len(condition) == 3:
-				# [fieldname, condition, value]
-				fieldname = condition[0]
-				if is_standard(fieldname):
-					continue
-				meta, df = get_meta_and_docfield(fieldname, data)
-				if not df:
-					raise_invalid_field(condition[0])
-			else:
-				# [doctype, fieldname, condition, value]
-				fieldname = condition[1]
-				if is_standard(fieldname):
-					continue
-				meta = frappe.get_meta(condition[0])
-				if not meta.get_field(fieldname):
-					raise_invalid_field(fieldname)
+		# Detect if this is DNF format (nested lists) or traditional format (flat list)
+		# DNF format: [[[doctype, field, op, val], ...], [[doctype, field, op, val], ...]]
+		# Traditional format: [[doctype, field, op, val], [doctype, field, op, val], ...]
+		is_dnf_format = False
+		if filters and isinstance(filters[0], list):
+			# Check if the first element is itself a list (DNF) or a filter tuple (traditional)
+			first_element = filters[0]
+			if first_element and isinstance(first_element[0], list):
+				is_dnf_format = True
+		
+		if is_dnf_format:
+			# DNF format: filters as nested list (OR groups)
+			for or_group in filters:
+				for condition in or_group:
+					if len(condition) == 3:
+						# [fieldname, condition, value]
+						fieldname = condition[0]
+						if is_standard(fieldname):
+							continue
+						meta, df = get_meta_and_docfield(fieldname, data)
+						if not df:
+							raise_invalid_field(condition[0])
+					else:
+						# [doctype, fieldname, condition, value]
+						fieldname = condition[1]
+						if is_standard(fieldname):
+							continue
+						meta = frappe.get_meta(condition[0])
+						if not meta.get_field(fieldname):
+							raise_invalid_field(fieldname)
+		else:
+			# Traditional format: flat list of filters
+			for condition in filters:
+				if len(condition) == 3:
+					# [fieldname, condition, value]
+					fieldname = condition[0]
+					if is_standard(fieldname):
+						continue
+					meta, df = get_meta_and_docfield(fieldname, data)
+					if not df:
+						raise_invalid_field(condition[0])
+				else:
+					# [doctype, fieldname, condition, value]
+					fieldname = condition[1]
+					if is_standard(fieldname):
+						continue
+					meta = frappe.get_meta(condition[0])
+					if not meta.get_field(fieldname):
+						raise_invalid_field(fieldname)
 
 	else:
 		for fieldname in filters:

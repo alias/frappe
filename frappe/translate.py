@@ -128,7 +128,7 @@ def get_lang_dict():
 
 def get_messages_for_boot():
 	"""Return all message translations that are required on boot."""
-
+	frappe.logger().error(f"get_messages_for_boot")
 	return get_all_translations(frappe.local.lang)
 
 
@@ -138,7 +138,7 @@ def get_app_translations():
 		language = frappe.db.get_value("User", frappe.session.user, "language")
 	else:
 		language = frappe.db.get_single_value("System Settings", "language")
-
+	frappe.logger().error(f"getting translation from get_app_translations for {language} und user: {frappe.session.user}")
 	return get_all_translations(language)
 
 
@@ -147,6 +147,12 @@ def get_all_translations(lang: str) -> dict[str, str]:
 
 	:param lang: Language Code, e.g. `hi` or `es-CO`
 	"""
+	try:
+		db_name = frappe.conf.db_name
+	except:
+		import traceback
+		import pprint
+		frappe.logger().error(f"GOT ERROR: {frappe.session.user}: {pprint.pformat(traceback.format_stack())}")
 	if not lang:
 		return {}
 
@@ -173,11 +179,15 @@ def get_all_translations(lang: str) -> dict[str, str]:
 	try:
 		return frappe.cache.hget(MERGED_TRANSLATION_KEY, lang, generator=_merge_translations)
 	except Exception:
+		import traceback
+		import pprint
 		if frappe.flags and frappe.flags.in_test:
 			raise
 		# People mistakenly call translation function on global variables
 		# where locals are not initialized, translations don't make much sense there
-		frappe.logger().error("Unable to load translations", exc_info=True)
+		frappe.logger().error(f"Unable to load translations for lang {lang}", exc_info=True)
+		frappe.logger().error(pprint.pformat(traceback.format_stack()), exc_info=True)
+
 		return {}
 
 
@@ -998,5 +1008,6 @@ def print_language(language: str):
 
 
 # Backward compatibility
+
 get_full_dict = get_all_translations
 load_lang = get_translations_from_apps

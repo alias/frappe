@@ -89,7 +89,7 @@ def enqueue(
 	"""
 	# To handle older implementations
 	is_async = kwargs.pop("async", is_async)
-
+	frappe.logger().error(f"enqueued {job_name} for method {method} in queue {queue}")
 	if deduplicate:
 		if not job_id:
 			frappe.throw(_("`job_id` paramater is required for deduplication."))

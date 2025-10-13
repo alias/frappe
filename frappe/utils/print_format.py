@@ -239,7 +239,7 @@ def download_pdf(
 ):
 	doc = doc or frappe.get_doc(doctype, name)
 	validate_print_permission(doc)
-
+	frappe.logger().error(f"DOWNLOAD PDFFFFF@!!!!!!!!!!!!!!!")
 	with print_language(language):
 		pdf_file = frappe.get_print(
 			doctype,

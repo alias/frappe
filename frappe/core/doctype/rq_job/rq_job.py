@@ -21,7 +21,7 @@ from frappe.utils import (
 )
 from frappe.utils.background_jobs import get_queues, get_redis_conn
 
-QUEUES = ["default", "long", "short"]
+QUEUES = ["default", "long", "short", "pcg_job_sequential"]
 JOB_STATUSES = ["queued", "started", "failed", "finished", "deferred", "scheduled", "canceled"]
 
 
@@ -52,7 +52,7 @@ class RQJob(Document):
 		exc_info: DF.Code | None
 		job_id: DF.Data | None
 		job_name: DF.Data | None
-		queue: DF.Literal["default", "short", "long"]
+		queue: DF.Literal["default", "short", "long", "pcg_job_sequential"]
 		started_at: DF.Datetime | None
 		status: DF.Literal["queued", "started", "finished", "failed", "deferred", "scheduled", "canceled"]
 		time_taken: DF.Duration | None

@@ -1,7 +1,7 @@
 <div class="sticky-top">
 	<header class="navbar navbar-expand" role="navigation">
 		<div class="container">
-			<a class="navbar-brand navbar-home" href="/app/customers">
+			<a class="navbar-brand navbar-home" href='{{ frappe.boot.home_page ? frappe.boot.home_page : "/app" }}'>
 				<img
 					class="app-logo"
 					src="{{ frappe.boot.app_logo_url }}"

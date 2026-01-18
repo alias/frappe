@@ -23,7 +23,7 @@ frappe.ui.form.on("Note", {
 		frm.set_df_property("marketing_content", "read_only", frm.is_note_editable ? 0: 1);
 		// hide all other fields
 		for (const field of frm.meta.fields) {
-			if (!["content", "section_break_4", "developer_content", "marketing_content", "developer_note", "marketing_note"].includes(field.fieldname)) {
+			if (!["content", "section_break_4", "developer_content", "marketing_content", "developer_note", "marketing_note", "marketing_content_markdown", "developer_content_markdown", "content_markdown"].includes(field.fieldname)) {
 				frm.set_df_property(
 					field.fieldname,
 					"hidden",

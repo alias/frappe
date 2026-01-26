@@ -4,6 +4,7 @@ frappe.ui.form.on("Note", {
 			frm.is_note_editable = false;
 			frm.events.set_editable(frm);
 		}
+		frm.set_df_property("content", "hidden", 1);
 	},
 	set_editable: function (frm) {
 		if (frm.has_perm("write")) {

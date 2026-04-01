@@ -42,8 +42,12 @@ class Monitor:
         if self.DEVELOPER_MODE:                 
             return
         
-        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
-            sock.sendto(msg.encode(),(self.MONITOR, self.PORT))
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
+                sock.sendto(msg.encode(), (self.MONITOR, self.PORT))
+        except OSError:
+            # Monitoring must never break business logic.
+            return
 
     def send_event(self, event_name, count=1):
         """ an event (.._C) uses an sum aggregation scheme """               

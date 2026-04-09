@@ -238,19 +238,27 @@ def get_heatmap_chart_config(chart, filters, heatmap_year):
 		timestamp_field = f"unix_timestamp({datefield})"
 	else:
 		timestamp_field = f"extract(epoch from timestamp {datefield})"
+		
+	if value_field == "1":
+		agg_expr = f"{aggregate_function}(*)"
+	else:
+		agg_expr = f"{aggregate_function}(`{value_field}`)"
 
+	
 	data = dict(
-		frappe.get_all(
-			doctype,
-			fields=[
-				timestamp_field,
-				{aggregate_function: value_field},
-			],
-			filters=filters,
-			group_by=f"date({datefield})",
-			as_list=1,
-			order_by=f"{datefield} asc",
-			ignore_ifnull=True,
+	frappe.db.sql(
+			f"""
+			SELECT {timestamp_field}, {agg_expr}
+			FROM `tab{doctype}`
+			WHERE `{datefield}` > %(year_start)s
+			AND `{datefield}` < %(next_year_start)s
+			GROUP BY date(`{datefield}`)
+			ORDER BY `{datefield}` ASC
+			""",
+			{
+				"year_start": year_start_date,
+				"next_year_start": next_year_start_date,
+			},
 		)
 	)
 

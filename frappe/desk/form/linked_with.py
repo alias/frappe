@@ -423,7 +423,6 @@ def get_exempted_doctypes():
 
 
 def get_linked_docs(doctype: str, name: str, linkinfo: dict | None = None) -> dict[str, list]:
-	print(f"get_linked_docs called with {doctype, name}")
 	if isinstance(linkinfo, str):
 		# additional fields are added in linkinfo
 		linkinfo = json.loads(linkinfo)

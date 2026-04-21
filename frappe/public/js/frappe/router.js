@@ -20,6 +20,9 @@ $(window).on("hashchange", function (e) {
 		console.log("Skip routing, we are in online shop");
 		return false;
 	}
+	if (["/desk/", "/desk"].includes(window.location.pathname)) {
+		window.location.replace("/desk/customers");
+	}
 	// v1 style routing, route is in hash
 	if (window.location.hash && !frappe.router.is_app_route(e.currentTarget.pathname)) {
 		let sub_path = frappe.router.get_sub_path(window.location.hash);
@@ -33,6 +36,10 @@ window.addEventListener("popstate", (e) => {
 	// not on shop	
 	if (document.location.href.indexOf("online-shop") > 1) {		
 		console.log("Skip routing, we are in online shop");
+		return false;
+	}
+	if (["/desk/", "/desk"].includes(window.location.pathname)) {
+		window.location.replace("/desk/customers");
 		return false;
 	}
 	frappe.router.route();
@@ -151,6 +158,12 @@ frappe.router = {
 		if (!frappe.app) return;
 
 		let sub_path = this.get_sub_path();
+
+		// Redirect bare /desk, /desk/ or root / to /desk/customers
+		if (!sub_path || ["/desk/", "/desk", "/"].includes(window.location.pathname)) {
+			window.location.replace("/desk/customers");
+			return;
+		}
 
 		if (frappe.boot.setup_complete) {
 			!frappe.re_route["setup-wizard"] && (frappe.re_route["setup-wizard"] = "app");
@@ -518,7 +531,7 @@ frappe.router = {
 		last_ws = last_ws.find(arr => arr[0] === 'Workspaces' && arr[1] !== 'Build');
 		workspace_name = last_ws ? last_ws[1] : workspace_name;
 
-		return "/desk";
+		return "/desk/customers";
 	},
 
 	/**
@@ -530,6 +543,11 @@ frappe.router = {
 	 * @returns {void}
 	 */
 	push_state(path, query_params = "") {
+		if (["/desk/", "/desk"].includes(path)) {
+			path = "/desk/customers";
+			// window.location.replace("/desk/customers");
+			// return;
+		}
 		if (window.location.pathname !== path || window.location.search !== query_params) {
 			// push/replace state so the browser looks fine
 			const method = frappe.route_flags.replace_route ? "replaceState" : "pushState";

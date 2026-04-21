@@ -20,6 +20,7 @@ $(window).on("hashchange", function (e) {
 		console.log("Skip routing, we are in online shop");
 		return false;
 	}
+
 	// v1 style routing, route is in hash
 	if (window.location.hash && !frappe.router.is_app_route(e.currentTarget.pathname)) {
 		let sub_path = frappe.router.get_sub_path(window.location.hash);
@@ -499,7 +500,7 @@ frappe.router = {
 		// 4. First workspace in list of current app
 		// 5. First workspace in list
 
-		return "/desk";
+		return "/desk/customers";
 	},
 
 	/**
@@ -511,6 +512,9 @@ frappe.router = {
 	 * @returns {void}
 	 */
 	push_state(path, query_params = "") {
+		if (["/desk/", "/desk"].includes(path)) {
+			path = "/desk/customers";
+		}
 		if (window.location.pathname !== path || window.location.search !== query_params) {
 			// push/replace state so the browser looks fine
 			const method = frappe.route_flags.replace_route ? "replaceState" : "pushState";

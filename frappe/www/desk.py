@@ -23,6 +23,11 @@ def get_context(context):
 		frappe.msgprint(_("Log in to access this page."))
 		frappe.redirect(f"/login?{urlencode({'redirect-to': frappe.request.path})}")
 
+	# Redirect bare /desk and /desk/ to /desk/customers
+	request_path = frappe.request.path.rstrip("/")
+	if request_path in ("/desk", "/desk/", ""):
+		frappe.redirect("/desk/customers")
+
 	elif frappe.session.data.user_type == "Website User":
 		frappe.throw(_("You are not permitted to access this page."), frappe.PermissionError)
 

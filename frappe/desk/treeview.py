@@ -68,7 +68,6 @@ def _get_children(doctype, parent="", ignore_permissions=False, include_disabled
 		.where(functions.IfNull(Field(parent_field), "").eq(parent))
 		.where(Field("docstatus") < 2)
 	)
-	return result
 
 	if frappe.db.has_column(doctype, "disabled") and not include_disabled:
 		# used 0 instead of `false` since type of check in postgres is smallint

@@ -69,6 +69,16 @@ frappe.ui.form.FormTour = class FormTour {
 	build_steps() {
 		this.driver_steps = [];
 		this.tour.steps.forEach((step) => {
+			// A step may carry its own driver-step definition instead of a fieldname,
+			// see pcg_web.form_tour. It gets the form, the driver and a finish callback
+			// and returns a ready driver step.
+			if (typeof step.custom_driver === "function") {
+				this.driver_steps.push(
+					step.custom_driver(this.frm, this.driver, () => this.on_finish && this.on_finish())
+				);
+				return;
+			}
+
 			const on_next = () => {
 				if (!this.is_next_condition_satisfied(step)) {
 					this.driver.preventMove();

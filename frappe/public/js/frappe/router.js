@@ -17,7 +17,6 @@ frappe.route_hooks = {};
 
 $(window).on("hashchange", function (e) {
 	if (document.location.href.indexOf("online-shop") > 1) {
-		console.log("Skip routing, we are in online shop");
 		return false;
 	}
 
@@ -33,7 +32,6 @@ window.addEventListener("popstate", (e) => {
 	// forward-back button, just re-render based on current route
 	// not on shop	
 	if (document.location.href.indexOf("online-shop") > 1) {		
-		console.log("Skip routing, we are in online shop");
 		return false;
 	}
 	frappe.router.route();

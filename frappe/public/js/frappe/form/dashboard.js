@@ -299,7 +299,6 @@ frappe.ui.form.Dashboard = class FormDashboard {
 				return undefined;
 			}).filter(widget => typeof(widget) !== "undefined")).then(widgets_responses => {
 				let widgets = widgets_responses.map(r => {let obj = r.message; obj.chart_settings = {filters: JSON.parse(obj.filters_json)}; return obj;});
-				debugger;
 				this.chart_widgets_area.body.empty();
 				this.chart_group = new frappe.widget.WidgetGroup({
 					container: $(this.chart_widgets_area.body),

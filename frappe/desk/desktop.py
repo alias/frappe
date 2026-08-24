@@ -307,7 +307,6 @@ class Workspace(DeskViews):
 			step = doc.as_dict().copy()
 			step.label = _(doc.title)
 			step.action_label = _(doc.action_label)
-			print(f"translating '{doc.description}' __to__ '{_(doc.description)}'")
 			step.description = _(doc.description)
 			if step.action == "Create Entry":
 				step.is_submittable = frappe.db.get_value(

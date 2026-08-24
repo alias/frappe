@@ -21,9 +21,6 @@ def occurance_checker(title:str, context: str = None, attempt_treshhold = 10, ex
     # test_after_key = frappe.cache().get_value(key, expires=True)
     # print(f'before: {test_before_key}, after: {test_after_key}, old_attempts: {attempts}, new_attempts: {new_attepts}')
 
-    if attempts == attempt_treshhold:
-        print(f'occurance_checker attempt_treshhold ({attempt_treshhold}) reached for: {title}, attempt: {attempts}')
-
     if attempts >= attempt_treshhold:
         return True
 

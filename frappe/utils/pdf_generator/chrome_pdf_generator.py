@@ -1,6 +1,8 @@
 import os
 import platform
+import signal
 import subprocess
+import threading
 import time
 from pathlib import Path
 from typing import ClassVar
@@ -12,13 +14,103 @@ from frappe import _
 from frappe.utils.data import cint
 from frappe.utils.print_utils import find_or_download_chromium_executable
 
-# TODO: close browser when worker is killed.
+IS_WINDOWS = platform.system().lower() == "windows"
+
+
+PR_SET_PDEATHSIG = 1
+
+if IS_WINDOWS:
+	_LIBC = None
+else:
+	import ctypes
+	import ctypes.util
+
+	try:
+		_LIBC = ctypes.CDLL(ctypes.util.find_library("c") or "libc.so.6", use_errno=True)
+	except OSError:
+		_LIBC = None
+
+
+def _die_with_parent():
+	"""Ask the kernel to kill this child as soon as its parent goes away.
+
+	Runs in the forked child between fork and exec, so it must not do anything that
+	could take a lock the parent held at fork time — libc is therefore loaded at
+	import, not here.
+
+	Without this, a worker that dies hard — RQ job timeout, OOM kill, docker stop —
+	never gets to run any cleanup, and its Chromium keeps running with nobody left
+	who knows about it.
+	"""
+	if _LIBC is not None:
+		_LIBC.prctl(PR_SET_PDEATHSIG, signal.SIGKILL)
+
+
+def _signal_tree(proc, sig):
+	"""Signal the whole process group, not just the browser process.
+
+	Chromium is a tree: browser, two zygotes, GPU and network. `Popen.terminate()`
+	signals the browser alone, so the children outlive it whenever the browser does
+	not get to shut them down itself.
+	"""
+	if IS_WINDOWS:
+		proc.send_signal(sig)
+		return
+	try:
+		os.killpg(os.getpgid(proc.pid), sig)
+	except (ProcessLookupError, PermissionError, OSError):
+		try:
+			proc.send_signal(sig)
+		except ProcessLookupError:
+			pass
+
+
+def _terminate_and_reap(proc, timeout=5):
+	"""Terminate a Chromium tree and collect its exit status.
+
+	Returns True if this call did the terminating. `wait()` matters as much as the
+	signal: without it the browser stays behind as a zombie on the worker, which is
+	how the leak first showed up in the process list.
+	"""
+	if proc.poll() is not None:
+		proc.wait()
+		return False
+
+	_signal_tree(proc, signal.SIGTERM)
+	try:
+		proc.wait(timeout=timeout)
+	except subprocess.TimeoutExpired:
+		_signal_tree(proc, signal.SIGKILL)
+		proc.wait()
+	return True
+
+
+def _drain(stream):
+	"""Read a pipe to EOF in the background so the writer never blocks on a full one."""
+	if not stream:
+		return
+
+	def run():
+		try:
+			for _line in stream:
+				pass
+		except (ValueError, OSError):
+			pass
+
+	threading.Thread(target=run, daemon=True).start()
 
 
 class ChromePDFGenerator:
 	_instance = None
 
 	_browsers: ClassVar[list] = []
+
+	# Every Chromium this process has started, whether or not an instance still
+	# points at it. Cleanup used to go through `self._chromium_process` alone and
+	# reported success even when that attribute had already been set to None — the
+	# process then survived unreferenced until the container was restarted. Killing
+	# from the registry means a lost handle can no longer become a leaked process.
+	_processes: ClassVar[list] = []
 
 	def add_browser(self, browser):
 		self._browsers.append(browser)
@@ -193,8 +285,20 @@ class ChromePDFGenerator:
 			)
 		else:
 			self._chromium_process = subprocess.Popen(
-				command_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
+				command_args,
+				# nothing reads stdout, and a full pipe would block Chromium
+				stdout=subprocess.DEVNULL,
+				# stderr carries the DevTools URL, so it stays a pipe and gets drained
+				# in _set_devtools_url once the URL has been read
+				stderr=subprocess.PIPE,
+				text=True,
+				# own session, and with it an own process group, so the whole tree can be
+				# signalled in one go (start_new_session rather than process_group=0,
+				# which would raise on Python < 3.11)
+				start_new_session=True,
+				preexec_fn=_die_with_parent,
 			)
+		ChromePDFGenerator._processes.append(self._chromium_process)
 		return self._chromium_process
 
 	def _set_devtools_url(self):
@@ -221,25 +325,46 @@ class ChromePDFGenerator:
 				url_start = line.find("ws://")
 				if url_start != -1:
 					self._devtools_url = line[url_start:].strip()
+					# From here on nobody reads stderr again. Chromium keeps writing to
+					# it, and a full 64K pipe buffer would block the browser mid-render.
+					_drain(stderr)
 					break
 
 		if not self._devtools_url:
-			self._chromium_process.terminate()
+			_terminate_and_reap(self._chromium_process)
+			if self._chromium_process in ChromePDFGenerator._processes:
+				ChromePDFGenerator._processes.remove(self._chromium_process)
+			self._chromium_process = None
 			raise TimeoutError("Chromium took too long to start.")
 
 	def _close_browser(self):
 		"""
-		Close the headless Chromium browser.
+		Close every headless Chromium this process has started.
+
+		Goes through the class registry rather than `self._chromium_process`, so a
+		handle that was dropped somewhere along the way still gets its process killed.
+		The log line reports what actually happened — the old unconditional "closed
+		successfully" hid the leak for as long as it existed.
 		"""
 		if self._browsers:
 			frappe.log("Cannot close Chromium as there are active browser instances.")
 			return
-		if self._chromium_process:
-			self._chromium_process.terminate()
+
+		closed = 0
+		for proc in list(ChromePDFGenerator._processes):
+			try:
+				if _terminate_and_reap(proc):
+					closed += 1
+			except Exception:
+				frappe.log_error(f"Failed to close Chromium process {proc.pid}")
+			finally:
+				ChromePDFGenerator._processes.remove(proc)
+
 		ChromePDFGenerator._instance = None
 		self._chromium_process = None
 		self._devtools_url = None
-		frappe.log("Headless Chromium closed successfully.")
+		if closed:
+			frappe.log(f"Headless Chromium closed successfully ({closed}).")
 
 	def detach_debug_browser(self):
 		"""
@@ -249,6 +374,10 @@ class ChromePDFGenerator:
 		the next PDF request starts with a fresh generator/process instead of reusing
 		the old debug session.
 		"""
+		# Drop it from the registry too, otherwise the next _close_browser() would
+		# kill the very window this method exists to keep open.
+		if self._chromium_process in ChromePDFGenerator._processes:
+			ChromePDFGenerator._processes.remove(self._chromium_process)
 		ChromePDFGenerator._instance = None
 		self._initialized = False
 		self._chromium_process = None
